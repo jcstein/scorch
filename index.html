@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#231612">
+    <meta
+      name="description"
+      content="Public-source dashboard for conflict damage, oil fires, methane plumes, and environmental harm."
+    >
+    <link rel="icon" href="./icons/app-icon.svg" type="image/svg+xml">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icons/app-icon.svg">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+    <link rel="stylesheet" href="./styles.css">
+    <title>Damage Atlas</title>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Damage Atlas</p>
+        <div class="hero-copy">
+          <h1>Track war damage, oil fires, and emissions through public sources.</h1>
+          <p class="hero-text">
+            Built around open or publicly reachable sources, with the freshest Iran and Gulf material surfaced first.
+            Treat it as a triangulation tool, not a single source of truth.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="install-button" class="button button-primary" hidden>Install App</button>
+          <a class="button button-ghost" href="#map-board">Jump To Map</a>
+          <a class="button button-ghost" href="#source-grid">Jump To Sources</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="status-band" aria-label="current status">
+          <div class="status-card">
+            <span class="status-label">Fresh Iran Updates</span>
+            <strong id="fresh-count">0</strong>
+            <p>March 2026 items surfaced first.</p>
+          </div>
+          <div class="status-card">
+            <span class="status-label">Near-Real-Time</span>
+            <strong id="realtime-count">0</strong>
+            <p>Feeds that can update inside hours or days.</p>
+          </div>
+          <div class="status-card">
+            <span class="status-label">Open Access</span>
+            <strong id="open-count">0</strong>
+            <p>Sources you can reach without a paid license.</p>
+          </div>
+          <div class="status-card">
+            <span class="status-label">Last Refresh</span>
+            <strong id="last-refresh-value">Checking...</strong>
+            <p>Auto-refresh runs every 6 hours via GitHub Actions.</p>
+          </div>
+        </section>
+
+        <section class="now-board">
+          <div class="section-heading">
+            <p class="eyebrow">What's New</p>
+            <h2>Iran and Gulf watch</h2>
+          </div>
+          <div id="priority-grid" class="priority-grid" aria-live="polite"></div>
+        </section>
+
+        <section id="map-board" class="map-board">
+          <div class="section-heading">
+            <p class="eyebrow">Map View</p>
+            <h2>Geography of the monitoring stack</h2>
+          </div>
+          <div class="map-layout">
+            <div class="map-stage">
+              <div id="map" class="map-canvas" aria-label="Interactive map of public-source monitoring hotspots"></div>
+              <div class="map-overlay">
+                <div class="legend-row">
+                  <span class="legend-chip legend-chip-hot">Fresh war-zone stack</span>
+                  <span class="legend-chip">Baseline or slower monitor</span>
+                </div>
+                <p class="map-caption">Click a hotspot or a source card to focus the map.</p>
+              </div>
+            </div>
+
+            <aside class="map-panel">
+              <p class="eyebrow">Current Focus</p>
+              <h3 id="map-panel-title" class="map-panel-title">Iran / Gulf</h3>
+              <p id="map-panel-copy" class="map-panel-copy"></p>
+              <div id="map-panel-meta" class="map-panel-meta"></div>
+              <div class="map-panel-actions">
+                <button id="fit-visible-button" class="button button-primary" type="button">Fit Visible</button>
+                <button id="reset-view-button" class="button button-ghost" type="button">Reset View</button>
+              </div>
+              <div id="map-panel-list" class="map-panel-list" aria-live="polite"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="controls">
+          <div class="section-heading">
+            <p class="eyebrow">Filters</p>
+            <h2>Find the right layer fast</h2>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">Region</span>
+            <div id="region-filters" class="pill-row" role="toolbar" aria-label="filter by region"></div>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">Signal</span>
+            <div id="signal-filters" class="pill-row" role="toolbar" aria-label="filter by signal"></div>
+          </div>
+
+          <div class="control-group search-group">
+            <label class="control-label" for="search-input">Search</label>
+            <input
+              id="search-input"
+              class="search-input"
+              type="search"
+              placeholder="Iran, methane, Gaza, refinery, satellite..."
+              autocomplete="off"
+            >
+          </div>
+        </section>
+
+        <section id="source-grid" class="source-section">
+          <div class="section-heading">
+            <p class="eyebrow">Sources</p>
+            <h2>Public models and monitoring layers</h2>
+          </div>
+          <div id="results-summary" class="results-summary"></div>
+          <div id="source-grid-inner" class="source-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="method-note">
+          <div class="section-heading">
+            <p class="eyebrow">How To Read It</p>
+            <h2>What this app is good at</h2>
+          </div>
+          <div class="note-grid">
+            <article class="note-card">
+              <h3>Best for</h3>
+              <p>
+                Triangulating fires, strike patterns, civilian harm, and environmental risk across public maps,
+                official datasets, and specialist monitors.
+              </p>
+            </article>
+            <article class="note-card">
+              <h3>Not Strong For</h3>
+              <p>
+                Street-level certainty, undisclosed military strikes, and any analysis that depends on classified or
+                paywalled imagery.
+              </p>
+            </article>
+            <article class="note-card">
+              <h3>Suggested flow</h3>
+              <p>
+                Start with NASA FIRMS for fresh heat, then read CEOBS or ACLED for context, then use UNOSAT or
+                Airwars for slower but more validated damage work.
+              </p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="source-card-template">
+      <article class="source-card">
+        <div class="card-topline">
+          <span class="source-region"></span>
+          <span class="source-freshness"></span>
+        </div>
+        <h3 class="source-title"></h3>
+        <p class="source-description"></p>
+        <dl class="card-meta">
+          <div>
+            <dt>Source date</dt>
+            <dd class="meta-date"></dd>
+          </div>
+          <div>
+            <dt>Cadence</dt>
+            <dd class="meta-cadence"></dd>
+          </div>
+          <div>
+            <dt>Access</dt>
+            <dd class="meta-access"></dd>
+          </div>
+        </dl>
+        <div class="tag-row"></div>
+        <p class="source-why"></p>
+        <p class="source-limits"></p>
+        <div class="card-actions">
+          <button class="button button-ghost source-map-button" type="button">Show On Map</button>
+          <a class="button button-primary source-link" target="_blank" rel="noreferrer">Open Source</a>
+          <a class="button button-ghost source-extra-link" target="_blank" rel="noreferrer" hidden>Companion Link</a>
+        </div>
+      </article>
+    </template>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
