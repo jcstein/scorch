@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-03-21T18:05:32.610Z",
+  "generatedAt": "2026-03-22T00:15:56.341Z",
   "totalSources": 11,
-  "healthySources": 10,
-  "failingSources": 1,
+  "healthySources": 11,
+  "failingSources": 0,
   "scriptVersion": 1
 }
