@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-28T12:08:10.365Z",
+  "generatedAt": "2026-03-28T18:06:51.812Z",
   "windowHours": 168,
   "reusedPreviousEvents": false,
   "sources": [
@@ -8,8 +8,8 @@
       "label": "NASA FIRMS MODIS (Global 24h CSV)",
       "url": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
       "ok": true,
-      "count": 145,
-      "fetchedAt": "2026-03-28T12:08:10.365Z"
+      "count": 146,
+      "fetchedAt": "2026-03-28T18:06:51.812Z"
     },
     {
       "id": "un_news_peace_security",
@@ -17,7 +17,7 @@
       "url": "https://news.un.org/feed/subscribe/en/news/topic/peace-and-security/feed/rss.xml",
       "ok": true,
       "count": 19,
-      "fetchedAt": "2026-03-28T12:08:10.365Z"
+      "fetchedAt": "2026-03-28T18:06:51.812Z"
     },
     {
       "id": "ceobs_rss",
@@ -25,41 +25,42 @@
       "url": "https://ceobs.org/feed/",
       "ok": true,
       "count": 1,
-      "fetchedAt": "2026-03-28T12:08:10.365Z"
+      "fetchedAt": "2026-03-28T18:06:51.812Z"
     }
   ],
   "stats": {
-    "totalEvents": 165,
+    "totalEvents": 166,
     "byType": {
-      "thermal": 145,
+      "thermal": 146,
       "analysis": 1,
       "conflict": 19
     },
     "byArea": {
+      "united-states": 2,
       "global-hub": 93,
       "ukraine": 23,
       "sudan": 19,
       "iran-gulf": 28,
-      "united-states": 1,
       "gaza": 1
     },
-    "newestEventAt": "2026-03-28T08:48:00.000Z"
+    "newestEventAt": "2026-03-28T16:52:00.000Z"
   },
   "events": [
     {
-      "id": "firms-7fc4c7ba",
+      "id": "firms-8a1f3c5",
       "type": "thermal",
-      "severity": "high",
+      "severity": "low",
       "title": "FIRMS thermal anomaly",
-      "summary": "FRP 229.4 MW, brightness 331.9 K, satellite A",
-      "region": "Global",
+      "summary": "FRP 19.1 MW, brightness 306.3 K, satellite T",
+      "region": "United States",
       "groups": [
+        "United States",
         "Global"
       ],
-      "areaId": "global-hub",
-      "lat": 45.52702,
-      "lon": 74.79682,
-      "eventTime": "2026-03-28T08:48:00.000Z",
+      "areaId": "united-states",
+      "lat": 29.1476,
+      "lon": -104.52265,
+      "eventTime": "2026-03-28T16:52:00.000Z",
       "sourceName": "NASA FIRMS",
       "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
       "link": "https://firms.modaps.eosdis.nasa.gov/map/",
@@ -68,7 +69,452 @@
         "Oil Fires",
         "Satellite"
       ],
-      "frp": 229.44
+      "frp": 19.15
+    },
+    {
+      "id": "firms-657bc0a",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 237.2 MW, brightness 394.6 K, satellite A",
+      "region": "Global",
+      "groups": [
+        "Global"
+      ],
+      "areaId": "global-hub",
+      "lat": 42.33393,
+      "lon": -6.70558,
+      "eventTime": "2026-03-28T15:18:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 237.16
+    },
+    {
+      "id": "firms-5b59c248",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 224.0 MW, brightness 395.1 K, satellite A",
+      "region": "Global",
+      "groups": [
+        "Global"
+      ],
+      "areaId": "global-hub",
+      "lat": 41.79514,
+      "lon": -7.60594,
+      "eventTime": "2026-03-28T15:18:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 223.99
+    },
+    {
+      "id": "firms-78d0b953",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 111.8 MW, brightness 317.5 K, satellite A",
+      "region": "Ukraine",
+      "groups": [
+        "Ukraine",
+        "Global"
+      ],
+      "areaId": "ukraine",
+      "lat": 49.72541,
+      "lon": 27.04839,
+      "eventTime": "2026-03-28T13:44:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 111.8
+    },
+    {
+      "id": "firms-133b0a60",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 349.2 MW, brightness 343.2 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 12.31173,
+      "lon": 34.72801,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 349.19
+    },
+    {
+      "id": "firms-76c15f31",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 105.9 MW, brightness 348.7 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 9.74349,
+      "lon": 29.96462,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 105.89
+    },
+    {
+      "id": "firms-79b89c49",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 96.6 MW, brightness 338.7 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 11.6201,
+      "lon": 31.3579,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 96.59
+    },
+    {
+      "id": "firms-1f502669",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 86.7 MW, brightness 330.0 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 8.70339,
+      "lon": 32.64857,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 86.66
+    },
+    {
+      "id": "firms-13776e1a",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 81.2 MW, brightness 355.7 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 11.33716,
+      "lon": 27.3794,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 81.22
+    },
+    {
+      "id": "firms-1853601a",
+      "type": "thermal",
+      "severity": "medium",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 75.5 MW, brightness 328.3 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 8.7003,
+      "lon": 32.65413,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 75.54
+    },
+    {
+      "id": "firms-3c217653",
+      "type": "thermal",
+      "severity": "medium",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 68.5 MW, brightness 346.4 K, satellite A",
+      "region": "Sudan",
+      "groups": [
+        "Sudan",
+        "Global"
+      ],
+      "areaId": "sudan",
+      "lat": 9.01085,
+      "lon": 28.46737,
+      "eventTime": "2026-03-28T13:31:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 68.45
+    },
+    {
+      "id": "firms-345c0621",
+      "type": "thermal",
+      "severity": "medium",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 45.2 MW, brightness 333.6 K, satellite A",
+      "region": "Ukraine",
+      "groups": [
+        "Ukraine",
+        "Global"
+      ],
+      "areaId": "ukraine",
+      "lat": 51.38788,
+      "lon": 32.2472,
+      "eventTime": "2026-03-28T12:04:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 45.18
+    },
+    {
+      "id": "firms-25a86e72",
+      "type": "thermal",
+      "severity": "medium",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 41.9 MW, brightness 338.3 K, satellite A",
+      "region": "Ukraine",
+      "groups": [
+        "Ukraine",
+        "Global"
+      ],
+      "areaId": "ukraine",
+      "lat": 45.59315,
+      "lon": 37.80576,
+      "eventTime": "2026-03-28T12:04:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 41.9
+    },
+    {
+      "id": "firms-25df5a22",
+      "type": "thermal",
+      "severity": "medium",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 30.9 MW, brightness 307.2 K, satellite A",
+      "region": "Ukraine",
+      "groups": [
+        "Ukraine",
+        "Global"
+      ],
+      "areaId": "ukraine",
+      "lat": 49.5669,
+      "lon": 27.40377,
+      "eventTime": "2026-03-28T12:04:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 30.86
+    },
+    {
+      "id": "firms-41aab1de",
+      "type": "thermal",
+      "severity": "low",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 28.6 MW, brightness 331.3 K, satellite A",
+      "region": "Ukraine",
+      "groups": [
+        "Ukraine",
+        "Global"
+      ],
+      "areaId": "ukraine",
+      "lat": 48.30907,
+      "lon": 36.90587,
+      "eventTime": "2026-03-28T12:04:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 28.59
+    },
+    {
+      "id": "firms-6705bf78",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 85.6 MW, brightness 327.8 K, satellite A",
+      "region": "Iran / Gulf",
+      "groups": [
+        "Iran / Gulf",
+        "Global"
+      ],
+      "areaId": "iran-gulf",
+      "lat": 25.16527,
+      "lon": 52.87364,
+      "eventTime": "2026-03-28T11:57:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 85.58
+    },
+    {
+      "id": "firms-6b89a84c",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 415.9 MW, brightness 364.7 K, satellite A",
+      "region": "Global",
+      "groups": [
+        "Global"
+      ],
+      "areaId": "global-hub",
+      "lat": 45.52703,
+      "lon": 74.80182,
+      "eventTime": "2026-03-28T10:24:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 415.85
+    },
+    {
+      "id": "firms-503428f2",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 274.3 MW, brightness 351.2 K, satellite A",
+      "region": "Global",
+      "groups": [
+        "Global"
+      ],
+      "areaId": "global-hub",
+      "lat": 45.31622,
+      "lon": 75.1222,
+      "eventTime": "2026-03-28T10:24:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 274.3
+    },
+    {
+      "id": "firms-13c49e94",
+      "type": "thermal",
+      "severity": "high",
+      "title": "FIRMS thermal anomaly",
+      "summary": "FRP 221.9 MW, brightness 347.4 K, satellite A",
+      "region": "Global",
+      "groups": [
+        "Global"
+      ],
+      "areaId": "global-hub",
+      "lat": 45.32751,
+      "lon": 74.70181,
+      "eventTime": "2026-03-28T10:24:00.000Z",
+      "sourceName": "NASA FIRMS",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
+      "signals": [
+        "Thermal",
+        "Oil Fires",
+        "Satellite"
+      ],
+      "frp": 221.91
     },
     {
       "id": "firms-71c93d9c",
@@ -767,30 +1213,6 @@
       "frp": 214.67
     },
     {
-      "id": "firms-491891d6",
-      "type": "thermal",
-      "severity": "high",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 214.2 MW, brightness 372.2 K, satellite A",
-      "region": "Global",
-      "groups": [
-        "Global"
-      ],
-      "areaId": "global-hub",
-      "lat": 21.06099,
-      "lon": 100.49471,
-      "eventTime": "2026-03-28T08:39:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 214.18
-    },
-    {
       "id": "firms-61e9ccf2",
       "type": "thermal",
       "severity": "high",
@@ -838,56 +1260,6 @@
         "Satellite"
       ],
       "frp": 45.04
-    },
-    {
-      "id": "firms-1c312ea4",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 37.7 MW, brightness 317.9 K, satellite T",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 9.77601,
-      "lon": 35.96898,
-      "eventTime": "2026-03-28T07:05:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 37.72
-    },
-    {
-      "id": "firms-2db22432",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 31.6 MW, brightness 339.8 K, satellite T",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 11.62133,
-      "lon": 29.62858,
-      "eventTime": "2026-03-28T07:05:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 31.57
     },
     {
       "id": "firms-a35935d",
@@ -1032,30 +1404,6 @@
         "Satellite"
       ],
       "frp": 226.69
-    },
-    {
-      "id": "firms-21cf47d5",
-      "type": "thermal",
-      "severity": "high",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 214.5 MW, brightness 345.2 K, satellite A",
-      "region": "Global",
-      "groups": [
-        "Global"
-      ],
-      "areaId": "global-hub",
-      "lat": 46.9576,
-      "lon": 126.34764,
-      "eventTime": "2026-03-28T05:29:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 214.49
     },
     {
       "id": "firms-9f9ff23",
@@ -1281,31 +1629,6 @@
       "frp": 40.93
     },
     {
-      "id": "firms-5424acc4",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 74.8 MW, brightness 315.8 K, satellite A",
-      "region": "Iran / Gulf",
-      "groups": [
-        "Iran / Gulf",
-        "Global"
-      ],
-      "areaId": "iran-gulf",
-      "lat": 25.18024,
-      "lon": 52.89901,
-      "eventTime": "2026-03-27T23:24:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 74.82
-    },
-    {
       "id": "firms-69b275cb",
       "type": "thermal",
       "severity": "medium",
@@ -1523,31 +1846,6 @@
         "Satellite"
       ],
       "frp": 259.11
-    },
-    {
-      "id": "firms-772c6c63",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 34.6 MW, brightness 334.6 K, satellite T",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 8.78379,
-      "lon": 31.20091,
-      "eventTime": "2026-03-27T18:51:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 34.58
     },
     {
       "id": "firms-5758d421",
@@ -1844,106 +2142,6 @@
       "frp": 27.58
     },
     {
-      "id": "firms-680f2401",
-      "type": "thermal",
-      "severity": "low",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 16.7 MW, brightness 307.8 K, satellite A",
-      "region": "Ukraine",
-      "groups": [
-        "Ukraine",
-        "Global"
-      ],
-      "areaId": "ukraine",
-      "lat": 51.06795,
-      "lon": 31.89218,
-      "eventTime": "2026-03-27T13:04:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 16.72
-    },
-    {
-      "id": "firms-6dfbe4cd",
-      "type": "thermal",
-      "severity": "low",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 16.0 MW, brightness 315.4 K, satellite A",
-      "region": "Ukraine",
-      "groups": [
-        "Ukraine",
-        "Global"
-      ],
-      "areaId": "ukraine",
-      "lat": 48.34759,
-      "lon": 23.55952,
-      "eventTime": "2026-03-27T13:04:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 15.98
-    },
-    {
-      "id": "firms-4eedaa20",
-      "type": "thermal",
-      "severity": "low",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 15.6 MW, brightness 303.1 K, satellite A",
-      "region": "Ukraine",
-      "groups": [
-        "Ukraine",
-        "Global"
-      ],
-      "areaId": "ukraine",
-      "lat": 52.00119,
-      "lon": 32.16585,
-      "eventTime": "2026-03-27T13:04:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 15.62
-    },
-    {
-      "id": "firms-70cb645d",
-      "type": "thermal",
-      "severity": "low",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 15.5 MW, brightness 306.0 K, satellite A",
-      "region": "Ukraine",
-      "groups": [
-        "Ukraine",
-        "Global"
-      ],
-      "areaId": "ukraine",
-      "lat": 51.44622,
-      "lon": 31.74037,
-      "eventTime": "2026-03-27T13:04:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 15.46
-    },
-    {
       "id": "firms-3fdfabe5",
       "type": "thermal",
       "severity": "high",
@@ -2217,56 +2415,6 @@
         "Satellite"
       ],
       "frp": 70.01
-    },
-    {
-      "id": "firms-6c92bd60",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 59.7 MW, brightness 352.2 K, satellite A",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 8.4457,
-      "lon": 33.15122,
-      "eventTime": "2026-03-27T12:53:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 59.67
-    },
-    {
-      "id": "firms-97c5c32",
-      "type": "thermal",
-      "severity": "low",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 29.3 MW, brightness 336.9 K, satellite A",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 8.48955,
-      "lon": 33.01516,
-      "eventTime": "2026-03-27T12:53:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 29.34
     },
     {
       "id": "un-702020f7",
@@ -3017,54 +3165,6 @@
       "frp": 221.58
     },
     {
-      "id": "firms-47d9f128",
-      "type": "thermal",
-      "severity": "high",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 214.4 MW, brightness 369.3 K, satellite A",
-      "region": "Global",
-      "groups": [
-        "Global"
-      ],
-      "areaId": "global-hub",
-      "lat": 20.56863,
-      "lon": 100.94882,
-      "eventTime": "2026-03-27T08:01:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 214.4
-    },
-    {
-      "id": "firms-780b6e4d",
-      "type": "thermal",
-      "severity": "high",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 214.4 MW, brightness 342.3 K, satellite A",
-      "region": "Global",
-      "groups": [
-        "Global"
-      ],
-      "areaId": "global-hub",
-      "lat": 18.51517,
-      "lon": 97.43333,
-      "eventTime": "2026-03-27T08:01:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 214.36
-    },
-    {
       "id": "firms-3ca959a4",
       "type": "thermal",
       "severity": "high",
@@ -3260,31 +3360,6 @@
       "frp": 20.61
     },
     {
-      "id": "firms-53d645bf",
-      "type": "thermal",
-      "severity": "low",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 19.2 MW, brightness 311.3 K, satellite T",
-      "region": "Ukraine",
-      "groups": [
-        "Ukraine",
-        "Global"
-      ],
-      "areaId": "ukraine",
-      "lat": 51.82156,
-      "lon": 32.43918,
-      "eventTime": "2026-03-27T07:52:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 19.24
-    },
-    {
       "id": "firms-7766f27a",
       "type": "thermal",
       "severity": "high",
@@ -3355,56 +3430,6 @@
         "Satellite"
       ],
       "frp": 278.29
-    },
-    {
-      "id": "firms-7bf94a87",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 52.1 MW, brightness 328.5 K, satellite T",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 10.02293,
-      "lon": 33.24643,
-      "eventTime": "2026-03-27T06:27:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 52.14
-    },
-    {
-      "id": "firms-4888caa1",
-      "type": "thermal",
-      "severity": "medium",
-      "title": "FIRMS thermal anomaly",
-      "summary": "FRP 46.9 MW, brightness 327.1 K, satellite T",
-      "region": "Sudan",
-      "groups": [
-        "Sudan",
-        "Global"
-      ],
-      "areaId": "sudan",
-      "lat": 10.01459,
-      "lon": 33.25224,
-      "eventTime": "2026-03-27T06:27:00.000Z",
-      "sourceName": "NASA FIRMS",
-      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
-      "link": "https://firms.modaps.eosdis.nasa.gov/map/",
-      "signals": [
-        "Thermal",
-        "Oil Fires",
-        "Satellite"
-      ],
-      "frp": 46.9
     },
     {
       "id": "firms-799d00b4",
