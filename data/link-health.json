@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-05T06:25:11.659Z",
+  "generatedAt": "2026-04-05T12:07:57.039Z",
   "results": [
     {
       "id": "nasa-firms",
@@ -9,12 +9,12 @@
       "statusText": "OK",
       "finalUrl": "https://firms.modaps.eosdis.nasa.gov/map/",
       "method": "HEAD",
-      "lastModified": "Thu, 02 Apr 2026 16:41:32 GMT",
-      "etag": "\"69ce9c3c-1822\"",
+      "lastModified": "Thu, 02 Apr 2026 16:41:35 GMT",
+      "etag": "\"69ce9c3f-1822\"",
       "cacheControl": "no-cache",
       "contentType": "text/html",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 401
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 117
     },
     {
       "id": "ceobs-black-rain",
@@ -28,8 +28,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 1896
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 1734
     },
     {
       "id": "ceobs-epic-fury",
@@ -43,8 +43,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 1605
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 1464
     },
     {
       "id": "acled-iran",
@@ -58,8 +58,8 @@
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 295
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 252
     },
     {
       "id": "world-bank-flaring",
@@ -73,8 +73,8 @@
       "etag": null,
       "cacheControl": "public, max-age=60",
       "contentType": "text/html;charset=utf-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 217
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 160
     },
     {
       "id": "emit-catalog",
@@ -88,8 +88,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 138
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 121
     },
     {
       "id": "epa-methane",
@@ -103,8 +103,8 @@
       "etag": null,
       "cacheControl": "private, max-age=0, must-revalidate, must-revalidate, no-cache, private",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 887
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 237
     },
     {
       "id": "ceobs-ukraine",
@@ -118,8 +118,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 1662
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 1739
     },
     {
       "id": "airwars-gaza",
@@ -133,8 +133,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 734
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 452
     },
     {
       "id": "unosat-gaza-city",
@@ -148,8 +148,8 @@
       "etag": "\"68e63af9-2b566a\"",
       "cacheControl": "max-age=2592000, public, private",
       "contentType": "application/pdf",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 938
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 582
     },
     {
       "id": "ceobs-sudan",
@@ -163,8 +163,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-05T06:25:11.659Z",
-      "responseTimeMs": 1621
+      "checkedAt": "2026-04-05T12:07:57.039Z",
+      "responseTimeMs": 1577
     }
   ]
 }
