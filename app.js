@@ -543,30 +543,58 @@ function getVisibleLiveEvents() {
   return list.sort((a, b) => new Date(b.eventTime) - new Date(a.eventTime));
 }
 
-function computeAreaStats(visibleSources) {
+function getLiveIngestTotal() {
+  const totalFromStats = Number(runtime.liveStats?.totalEvents);
+  if (Number.isFinite(totalFromStats) && totalFromStats >= 0) {
+    return totalFromStats;
+  }
+  return runtime.liveEvents.length;
+}
+
+function computeAreaStats(visibleSources, visibleLiveEvents = []) {
   const stats = new Map();
+  const ensureStat = (areaId) => {
+    if (!stats.has(areaId)) {
+      stats.set(areaId, {
+        areaId,
+        count: 0,
+        sourceCount: 0,
+        liveCount: 0,
+        priorityCount: 0,
+        sources: [],
+        liveEvents: [],
+        freshest: null,
+        freshestLive: null
+      });
+    }
+    return stats.get(areaId);
+  };
 
   visibleSources.forEach((source) => {
     source.mapAreas.forEach((areaId) => {
-      if (!stats.has(areaId)) {
-        stats.set(areaId, {
-          areaId,
-          count: 0,
-          priorityCount: 0,
-          sources: []
-        });
-      }
-
-      const stat = stats.get(areaId);
+      const stat = ensureStat(areaId);
       stat.count += 1;
+      stat.sourceCount += 1;
       stat.priorityCount += Number(source.priority);
       stat.sources.push(source);
     });
   });
 
+  visibleLiveEvents.forEach((event) => {
+    const areaId = areasById.has(event.areaId) ? event.areaId : "global-hub";
+    const stat = ensureStat(areaId);
+    stat.count += 1;
+    stat.liveCount += 1;
+    stat.liveEvents.push(event);
+  });
+
   stats.forEach((stat) => {
     stat.sources = sortSources(stat.sources);
+    stat.liveEvents = [...stat.liveEvents].sort(
+      (a, b) => new Date(b.eventTime) - new Date(a.eventTime)
+    );
     stat.freshest = stat.sources[0] || null;
+    stat.freshestLive = stat.liveEvents[0] || null;
   });
 
   return stats;
@@ -646,7 +674,9 @@ function focusSource(sourceId, options = {}) {
 
 function resetView() {
   state.activeSourceId = null;
-  state.activeAreaId = getDefaultAreaId(computeAreaStats(getVisibleSources()));
+  state.activeAreaId = getDefaultAreaId(
+    computeAreaStats(getVisibleSources(), getVisibleLiveEvents())
+  );
   renderAll();
   fitVisibleAreas();
 }
@@ -777,10 +807,16 @@ function renderMapPanel(visibleSources, areaStats) {
   els.mapPanelTitle.textContent = area.name;
   els.mapPanelCopy.textContent = area.summary;
 
+  const datedLabel = stat.freshest
+    ? `Freshest source: ${stat.freshest.freshness}`
+    : stat.freshestLive
+      ? `Latest live: ${formatEventTime(stat.freshestLive.eventTime)}`
+      : "No dated item";
+
   [
-    `${stat.count} visible source${stat.count === 1 ? "" : "s"}`,
+    `${stat.sourceCount} source${stat.sourceCount === 1 ? "" : "s"}, ${stat.liveCount} live`,
     `${stat.priorityCount} priority`,
-    stat.freshest ? `Freshest: ${stat.freshest.freshness}` : "No dated source"
+    datedLabel
   ].forEach((item) => {
     els.mapPanelMeta.appendChild(buildMetaChip(item));
   });
@@ -789,6 +825,15 @@ function renderMapPanel(visibleSources, areaStats) {
   heading.className = "map-list-heading";
   heading.textContent = "Sources in this zone";
   els.mapPanelList.appendChild(heading);
+
+  if (!stat.sources.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent =
+      "No source cards in this zone right now. Live events still appear as map markers.";
+    els.mapPanelList.appendChild(empty);
+    return;
+  }
 
   stat.sources.forEach((source) => {
     els.mapPanelList.appendChild(buildMapListButton(source));
@@ -836,12 +881,17 @@ function renderLiveEvents(visibleLiveEvents) {
     return;
   }
 
-  const totalLoaded = runtime.liveEvents.length;
+  const totalLoaded = getLiveIngestTotal();
+  const mappableTotal = runtime.liveEvents.length;
   const visibleCount = visibleLiveEvents.length;
   const windowDays = Math.round((runtime.liveWindowHours || 24 * 7) / 24);
+  const ingestNote =
+    totalLoaded === mappableTotal
+      ? `${totalLoaded} ingested over ${windowDays} days`
+      : `${totalLoaded} ingested over ${windowDays} days (${mappableTotal} mappable on map)`;
   els.liveSummary.textContent = `${visibleCount} live event${
     visibleCount === 1 ? "" : "s"
-  } match your filters (${totalLoaded} ingested over ${windowDays} days).`;
+  } match your filters (${ingestNote}).`;
 
   els.liveEventsList.innerHTML = "";
 
@@ -1012,7 +1062,7 @@ function renderStats() {
       source.cadence.toLowerCase().includes("daily")
   ).length;
 
-  const nearRealtime = runtime.liveEvents.length || sourceNearRealtime;
+  const nearRealtime = getLiveIngestTotal() || sourceNearRealtime;
 
   const open = sources.filter(
     (source) => !source.access.toLowerCase().includes("paid")
@@ -1237,7 +1287,9 @@ function updateMap(visibleSources, areaStats, visibleLiveEvents) {
   renderLiveLayer(visibleLiveEvents);
 }
 
-function fitVisibleAreas(areaStats = computeAreaStats(getVisibleSources())) {
+function fitVisibleAreas(
+  areaStats = computeAreaStats(getVisibleSources(), getVisibleLiveEvents())
+) {
   if (!runtime.map || !areaStats.size) {
     return;
   }
@@ -1426,7 +1478,7 @@ function clearLegacyServiceWorkers() {
 function renderAll() {
   const visibleSources = getVisibleSources();
   const visibleLiveEvents = getVisibleLiveEvents();
-  const areaStats = computeAreaStats(visibleSources);
+  const areaStats = computeAreaStats(visibleSources, visibleLiveEvents);
 
   ensureValidSelection(visibleSources, areaStats);
   renderPriority();
