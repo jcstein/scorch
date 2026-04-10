@@ -5,12 +5,12 @@ import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
 const appPath = resolve(repoRoot, "app.js");
-const refreshPath = resolve(repoRoot, "data", "refresh.json");
-const linkHealthPath = resolve(repoRoot, "data", "link-health.json");
-const liveEventsPath = resolve(repoRoot, "data", "live-events.json");
+const refreshPath = resolve(repoRoot, "public", "data", "refresh.json");
+const linkHealthPath = resolve(repoRoot, "public", "data", "link-health.json");
+const liveEventsPath = resolve(repoRoot, "public", "data", "live-events.json");
 
 const SOURCE_REGEX = /id:\s*"([^"]+)"[\s\S]*?link:\s*"([^"]+)"/g;
-const USER_AGENT = "damage-atlas-refresh/2.0 (+https://github.com/jcstein/damage)";
+const USER_AGENT = "scorch-refresh/2.0 (+https://github.com/jcstein/damage)";
 const generatedAt = new Date().toISOString();
 const generatedDate = new Date(generatedAt);
 const LIVE_WINDOW_HOURS = 24 * 7;
@@ -403,32 +403,7 @@ function dedupeFirmsGrid(events) {
 
 function sampleFirmsEvents(events) {
   const deduped = dedupeFirmsGrid(events);
-  const focusOrder = ["iran-gulf", "gaza", "ukraine", "sudan", "united-states"];
-  const focusBuckets = new Map(focusOrder.map((id) => [id, []]));
-  const global = [];
-
-  for (const event of deduped) {
-    if (focusBuckets.has(event.areaId)) {
-      focusBuckets.get(event.areaId).push(event);
-    } else {
-      global.push(event);
-    }
-  }
-
-  const scoreSort = (a, b) =>
-    Number(b.frp || 0) - Number(a.frp || 0) ||
-    new Date(b.eventTime).getTime() - new Date(a.eventTime).getTime();
-
-  focusBuckets.forEach((bucket) => bucket.sort(scoreSort));
-  global.sort(scoreSort);
-
-  const selected = [];
-  focusOrder.forEach((areaId) => {
-    selected.push(...focusBuckets.get(areaId).slice(0, 18));
-  });
-  selected.push(...global.slice(0, 90));
-
-  return sortEventsByTime(selected).slice(0, 160);
+  return sortEventsByTime(deduped);
 }
 
 function withinWindow(isoTime) {
@@ -567,7 +542,7 @@ async function ingestUnNews() {
     });
   }
 
-  const selected = sortEventsByTime(dedupeById(events)).slice(0, 40);
+  const selected = sortEventsByTime(dedupeById(events));
   return {
     source: {
       id: feed.id,
@@ -623,7 +598,7 @@ async function ingestCeobs() {
     });
   }
 
-  const selected = sortEventsByTime(dedupeById(events)).slice(0, 20);
+  const selected = sortEventsByTime(dedupeById(events));
   return {
     source: {
       id: feed.id,
@@ -770,7 +745,7 @@ async function main() {
     }
   }
 
-  liveEvents = sortEventsByTime(dedupeById(liveEvents)).slice(0, 220);
+  liveEvents = sortEventsByTime(dedupeById(liveEvents));
 
   let reusedPreviousEvents = false;
   if (!liveEvents.length) {

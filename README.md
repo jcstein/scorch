@@ -1,6 +1,6 @@
-# Damage Atlas
+# Scorch
 
-Damage Atlas is a static web app/PWA for tracking war damage, oil fires, and emissions through public sources.
+Scorch is a static web app/PWA for tracking war damage, oil fires, and emissions through public sources.
 
 ## Local Run
 

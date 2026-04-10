@@ -1,0 +1,17 @@
+{
+  "name": "Scorch",
+  "short_name": "Scorch",
+  "description": "Public-source conflict and environmental damage tracker.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f2ebe1",
+  "theme_color": "#231612",
+  "icons": [
+    {
+      "src": "./icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

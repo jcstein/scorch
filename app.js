@@ -1,3 +1,6 @@
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 const areas = [
   {
     id: "iran-gulf",
@@ -397,12 +400,15 @@ const regionOrder = [
   "United States"
 ];
 
+const LIVE_PAGE_SIZE = 12;
+
 const state = {
   region: "All",
   signal: "All",
   query: "",
   activeAreaId: "iran-gulf",
-  activeSourceId: null
+  activeSourceId: null,
+  liveShown: LIVE_PAGE_SIZE
 };
 
 const runtime = {
@@ -440,7 +446,9 @@ const els = {
   mapPanelList: document.querySelector("#map-panel-list"),
   fitVisibleButton: document.querySelector("#fit-visible-button"),
   resetViewButton: document.querySelector("#reset-view-button"),
-  mapBoard: document.querySelector("#map-board")
+  mapBoard: document.querySelector("#map-board"),
+  viewGridBtn: document.querySelector("#view-grid"),
+  viewListBtn: document.querySelector("#view-list")
 };
 
 function normalize(text) {
@@ -913,7 +921,10 @@ function renderLiveEvents(visibleLiveEvents) {
     return;
   }
 
-  visibleLiveEvents.slice(0, 30).forEach((event) => {
+  const page = visibleLiveEvents.slice(0, state.liveShown);
+  const remaining = visibleCount - page.length;
+
+  page.forEach((event) => {
     const card = document.createElement("article");
     card.className = "live-event-card";
 
@@ -969,6 +980,18 @@ function renderLiveEvents(visibleLiveEvents) {
     card.append(topline, title, summary, source, actions);
     els.liveEventsList.appendChild(card);
   });
+
+  if (remaining > 0) {
+    const loadMore = document.createElement("button");
+    loadMore.type = "button";
+    loadMore.className = "button button-ghost live-load-more";
+    loadMore.textContent = `Load more (${remaining.toLocaleString()} remaining)`;
+    loadMore.addEventListener("click", () => {
+      state.liveShown += LIVE_PAGE_SIZE;
+      renderAll();
+    });
+    els.liveEventsList.appendChild(loadMore);
+  }
 }
 
 function renderCard(source, priority = false) {
@@ -1076,11 +1099,13 @@ function renderStats() {
 function renderFilters() {
   buildPills(els.regionFilters, regionOrder, state.region, (value) => {
     state.region = value;
+    state.liveShown = LIVE_PAGE_SIZE;
     renderAll();
   });
 
   buildPills(els.signalFilters, signalOrder, state.signal, (value) => {
     state.signal = value;
+    state.liveShown = LIVE_PAGE_SIZE;
     renderAll();
   });
 }
@@ -1094,7 +1119,7 @@ function createAreaIcon(area, stat, active) {
     </div>
   `;
 
-  return window.L.divIcon({
+  return L.divIcon({
     html,
     className: "",
     iconSize: [84, 84],
@@ -1150,13 +1175,13 @@ function renderLiveLayer(visibleLiveEvents) {
   }
 
   if (!runtime.liveLayer) {
-    runtime.liveLayer = window.L.layerGroup().addTo(runtime.map);
+    runtime.liveLayer = L.layerGroup().addTo(runtime.map);
   }
 
   runtime.liveLayer.clearLayers();
 
-  visibleLiveEvents.slice(0, 180).forEach((event) => {
-    const marker = window.L.circleMarker([event.lat, event.lon], getLiveMarkerStyle(event));
+  visibleLiveEvents.forEach((event) => {
+    const marker = L.circleMarker([event.lat, event.lon], getLiveMarkerStyle(event));
     const popup = `
       <strong>${escapeHtml(event.title || "Live event")}</strong><br>
       ${escapeHtml(event.region || "Global")}<br>
@@ -1179,20 +1204,20 @@ function renderLiveLayer(visibleLiveEvents) {
 }
 
 function setupMap() {
-  if (runtime.map || !window.L) {
+  if (runtime.map || !L) {
     return;
   }
 
-  runtime.map = window.L.map(els.mapRoot, {
+  runtime.map = L.map(els.mapRoot, {
     zoomControl: false,
     minZoom: 2,
     maxZoom: 10,
     worldCopyJump: true
   }).setView([24, 18], 2);
 
-  window.L.control.zoom({ position: "topright" }).addTo(runtime.map);
+  L.control.zoom({ position: "topright" }).addTo(runtime.map);
 
-  window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(runtime.map);
 
@@ -1200,7 +1225,7 @@ function setupMap() {
     const layer = {};
 
     if (area.bounds) {
-      layer.bounds = window.L.rectangle(area.bounds, {
+      layer.bounds = L.rectangle(area.bounds, {
         color: "#1b6e65",
         weight: 1.4,
         opacity: 0.6,
@@ -1212,7 +1237,7 @@ function setupMap() {
       });
     }
 
-    layer.marker = window.L.marker(area.center, {
+    layer.marker = L.marker(area.center, {
       keyboard: true,
       icon: createAreaIcon(area, { count: 1, priorityCount: 0 }, false)
     });
@@ -1268,7 +1293,7 @@ function updateMap(visibleSources, areaStats, visibleLiveEvents) {
   if (!activeSource) {
     runtime.sourceLayer = null;
   } else {
-    runtime.sourceLayer = window.L.circleMarker(activeSource.point, {
+    runtime.sourceLayer = L.circleMarker(activeSource.point, {
       radius: 9,
       color: "#fff7f3",
       weight: 2,
@@ -1294,7 +1319,7 @@ function fitVisibleAreas(
     return;
   }
 
-  const bounds = window.L.latLngBounds([]);
+  const bounds = L.latLngBounds([]);
   areaStats.forEach((_, areaId) => {
     const area = areasById.get(areaId);
     if (!area) {
@@ -1351,6 +1376,7 @@ function fitSource(sourceId) {
 function setupSearch() {
   els.searchInput.addEventListener("input", (event) => {
     state.query = event.target.value;
+    state.liveShown = LIVE_PAGE_SIZE;
     renderAll();
   });
 }
@@ -1362,6 +1388,24 @@ function setupMapControls() {
 
   els.resetViewButton.addEventListener("click", () => {
     resetView();
+  });
+}
+
+function setupViewToggle() {
+  if (!els.viewGridBtn || !els.viewListBtn) {
+    return;
+  }
+
+  els.viewGridBtn.addEventListener("click", () => {
+    els.sourceGrid.classList.remove("is-list");
+    els.viewGridBtn.classList.add("is-active");
+    els.viewListBtn.classList.remove("is-active");
+  });
+
+  els.viewListBtn.addEventListener("click", () => {
+    els.sourceGrid.classList.add("is-list");
+    els.viewListBtn.classList.add("is-active");
+    els.viewGridBtn.classList.remove("is-active");
   });
 }
 
@@ -1449,6 +1493,43 @@ async function loadLiveEvents() {
   }
 }
 
+function setupTopBar() {
+  const topBar = document.querySelector("#top-bar");
+  const hero = document.querySelector(".hero");
+  if (!topBar || !hero) {
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      topBar.hidden = false;
+      topBar.classList.toggle("is-visible", !entry.isIntersecting);
+    },
+    { threshold: 0, rootMargin: "-52px 0px 0px 0px" }
+  );
+
+  observer.observe(hero);
+}
+
+function setupDarkMode() {
+  const toggle = document.querySelector("#dark-toggle");
+  if (!toggle) {
+    return;
+  }
+
+  const saved = localStorage.getItem("scorch-theme");
+  if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+
+  toggle.addEventListener("click", () => {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const next = isDark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("scorch-theme", next);
+  });
+}
+
 function clearLegacyServiceWorkers() {
   window.addEventListener("load", async () => {
     if ("serviceWorker" in navigator) {
@@ -1466,7 +1547,7 @@ function clearLegacyServiceWorkers() {
         const keys = await window.caches.keys();
         await Promise.all(
           keys
-            .filter((key) => key.startsWith("damage-atlas"))
+            .filter((key) => key.startsWith("damage-atlas") || key.startsWith("scorch"))
             .map((key) => window.caches.delete(key))
         );
       } catch (_) {
@@ -1496,9 +1577,12 @@ function renderAll() {
 }
 
 async function init() {
+  setupDarkMode();
+  setupTopBar();
   setupMap();
   setupSearch();
   setupMapControls();
+  setupViewToggle();
   setupInstall();
   clearLegacyServiceWorkers();
   renderAll();
