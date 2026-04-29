@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T06:47:43.170Z",
+  "generatedAt": "2026-04-29T12:30:10.749Z",
   "results": [
     {
       "id": "nasa-firms",
@@ -9,12 +9,12 @@
       "statusText": "OK",
       "finalUrl": "https://firms.modaps.eosdis.nasa.gov/map/",
       "method": "HEAD",
-      "lastModified": "Tue, 28 Apr 2026 19:29:53 GMT",
-      "etag": "\"69f10ab1-1822\"",
+      "lastModified": "Wed, 29 Apr 2026 12:11:50 GMT",
+      "etag": "\"69f1f586-1822\"",
       "cacheControl": "no-cache",
       "contentType": "text/html",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 181
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 197
     },
     {
       "id": "ceobs-black-rain",
@@ -28,8 +28,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 1522
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 1578
     },
     {
       "id": "ceobs-epic-fury",
@@ -43,8 +43,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 1545
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 1462
     },
     {
       "id": "acled-iran",
@@ -58,8 +58,8 @@
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 263
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 191
     },
     {
       "id": "world-bank-flaring",
@@ -73,8 +73,8 @@
       "etag": null,
       "cacheControl": "public, max-age=1",
       "contentType": "text/html;charset=utf-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 65
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 110
     },
     {
       "id": "emit-catalog",
@@ -88,8 +88,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 218
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 143
     },
     {
       "id": "epa-methane",
@@ -98,13 +98,13 @@
       "status": 200,
       "statusText": "OK",
       "finalUrl": "https://echo.epa.gov/trends/methane-super-emitter-program/data-explorer",
-      "method": "GET",
+      "method": "HEAD",
       "lastModified": null,
       "etag": null,
       "cacheControl": "private, max-age=0, must-revalidate, must-revalidate, no-cache, private",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 1409
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 834
     },
     {
       "id": "ceobs-ukraine",
@@ -118,8 +118,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 1858
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 1432
     },
     {
       "id": "airwars-gaza",
@@ -133,8 +133,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 499
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 518
     },
     {
       "id": "unosat-gaza-city",
@@ -148,8 +148,8 @@
       "etag": "\"68e63af9-2b566a\"",
       "cacheControl": "max-age=2592000, public, private",
       "contentType": "application/pdf",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 5200
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 599
     },
     {
       "id": "ceobs-sudan",
@@ -163,8 +163,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-04-29T06:47:43.170Z",
-      "responseTimeMs": 1488
+      "checkedAt": "2026-04-29T12:30:10.749Z",
+      "responseTimeMs": 1448
     }
   ]
 }
