@@ -111,74 +111,74 @@ const sources = [
     locationLabel: "Persian Gulf energy corridor"
   },
   {
-    id: "ceobs-black-rain",
-    title: "CEOBS on Tehran oil fires",
-    region: "Iran / Gulf",
-    groups: ["Iran / Gulf"],
-    signals: ["Oil Fires", "Air", "Water", "Health"],
-    priority: true,
-    freshness: "March 9, 2026",
-    freshnessRank: 5,
-    sourceDate: "March 9, 2026",
-    cadence: "Rapid conflict analysis",
-    access: "Open",
-    description:
-      "A focused public analysis of the 7-8 March 2026 Tehran oil-facility strikes and their environmental fallout.",
-    why:
-      "This is one of the clearest recent public writeups connecting the Iran war directly to oil-burning damage, black smoke, and likely water contamination pathways.",
-    limits:
-      "It is a specialist assessment, not a live incident feed, and some claims depend on remote verification during an active war.",
-    link: "https://ceobs.org/black-rain-the-health-and-environmental-risks-from-tehrans-oil-fires/",
-    primaryArea: "iran-gulf",
-    mapAreas: ["iran-gulf"],
-    point: [35.69, 51.39],
-    zoom: 8,
-    locationLabel: "Tehran"
-  },
-  {
-    id: "ceobs-epic-fury",
-    title: "CEOBS environmental harm map for Iran and the region",
+    id: "ceobs-iran-update",
+    title: "CEOBS: Iran War environmental risk overview (late March 2026)",
     region: "Iran / Gulf",
     groups: ["Iran / Gulf"],
     signals: ["Environmental Risk", "Oil Fires", "Water", "Military"],
     priority: true,
-    freshness: "March 10, 2026",
+    freshness: "March 27, 2026",
     freshnessRank: 5,
-    sourceDate: "March 10, 2026",
+    sourceDate: "March 27, 2026",
     cadence: "Rapid conflict analysis",
     access: "Open",
     description:
-      "CEOBS mapped more than 300 environmentally relevant incidents across Iran, the Gulf, and nearby states during the first phase of the 2026 war.",
+      "A month into the Israeli-US war against Iran, CEOBS summarises current and emerging conflict trends and their potential implications for people and the environment.",
     why:
-      "It is currently the strongest public-source bridge between conflict reporting and environmental damage reporting in the Iran theatre.",
+      "This is the most comprehensive environmental-risk update covering the broader Iran theatre beyond the initial Tehran strikes, and it supersedes the earlier March reports.",
     limits:
-      "CEOBS notes these incidents still need fuller verification and peer review because of wartime information noise.",
-    link: "https://ceobs.org/operation-epic-fury-emerging-environmental-harm-and-risks-in-iran-and-the-region/",
+      "It is a specialist assessment, not a live incident feed, and some claims depend on remote verification during an active war.",
+    link: "https://ceobs.org/iran-war-environmental-risk-overview-as-of-27th-march/",
     primaryArea: "iran-gulf",
     mapAreas: ["iran-gulf"],
-    point: [30.2, 52.2],
+    point: [32.5, 53.7],
     zoom: 6,
-    locationLabel: "Iran and the wider Gulf"
+    locationLabel: "Iran conflict theatre"
   },
   {
-    id: "acled-iran",
-    title: "ACLED Middle East special issue and Iran crisis coverage",
+    id: "acled-60-days-iran",
+    title: "ACLED: 60 days of the Iran war — 6 conflicts you didn't see",
     region: "Iran / Gulf",
     groups: ["Iran / Gulf"],
-    signals: ["Conflict Events", "Strike Pattern", "Civilian Harm"],
+    signals: ["Conflict Events", "Strike Pattern", "Civilian Harm", "Regional"],
     priority: true,
-    freshness: "March 4, 2026",
+    freshness: "April 29, 2026",
     freshnessRank: 5,
-    sourceDate: "March 4, 2026",
-    cadence: "Public analysis plus daily eligible-user updates",
-    access: "Public analysis; fuller data needs registration or eligibility",
+    sourceDate: "April 29, 2026",
+    cadence: "Public analysis with ongoing updates",
+    access: "Open",
     description:
-      "ACLED's March 2026 special issue documents strike distribution, retaliation patterns, and wider regional escalation after February 28, 2026.",
+      "While global attention was fixed on Iran, violence, unrest, and instability continued to escalate elsewhere. ACLED documents six conflicts that gained traction as the Iran war unfolded.",
     why:
-      "It is one of the freshest structured public conflict sources for the Iran war, and ACLED says eligible users can access daily Iran crisis data.",
+      "Fresh analysis tying the Iran war's regional ripple effects to under-reported violence, published today.",
+    limits:
+      "It focuses on under-the-radar conflicts rather than direct Iran theatre mapping.",
+    link: "https://acleddata.com/expert-comment/60-days-iran-war-6-conflicts-you-didnt-see",
+    primaryArea: "iran-gulf",
+    mapAreas: ["iran-gulf"],
+    point: [32.5, 53.7],
+    zoom: 6,
+    locationLabel: "Iran and regional effects"
+  },
+  {
+    id: "acled-iran-live",
+    title: "ACLED: Iran War Updates daily tracker",
+    region: "Iran / Gulf",
+    groups: ["Iran / Gulf"],
+    signals: ["Conflict Events", "Strike Pattern", "Civilian Harm", "Daily"],
+    priority: true,
+    freshness: "Ongoing daily",
+    freshnessRank: 5,
+    sourceDate: "Updated daily since late February 2026",
+    cadence: "Daily updates",
+    access: "Open",
+    description:
+      "ACLED's dedicated daily updates page tracking the conflict unfolding in Iran and the wider region, with interactive maps and event counts.",
+    why:
+      "This is ACLED's actively maintained daily tracker for the Iran war, replacing the earlier one-off special issue.",
     limits:
       "ACLED is event data, not direct structural damage mapping, and the best granularity requires account access.",
-    link: "https://acleddata.com/update/middle-east-special-issue-march-2026",
+    link: "https://acleddata.com/iran-crisis-live",
     extraLabel: "Access FAQ",
     extraLink: "https://acleddata.com/faq/how-can-i-access-and-use-acled-data",
     primaryArea: "iran-gulf",
@@ -418,7 +418,7 @@ const runtime = {
   liveLayer: null,
   liveEvents: [],
   liveStats: null,
-  liveWindowHours: 24 * 7,
+  liveWindowHours: 24 * 30,
   hasInitialFit: false,
   installPrompt: null,
   pendingLivePopupId: null
@@ -892,7 +892,7 @@ function renderLiveEvents(visibleLiveEvents) {
   const totalLoaded = getLiveIngestTotal();
   const mappableTotal = runtime.liveEvents.length;
   const visibleCount = visibleLiveEvents.length;
-  const windowDays = Math.round((runtime.liveWindowHours || 24 * 7) / 24);
+  const windowDays = Math.round((runtime.liveWindowHours || 24 * 30) / 24);
   const ingestNote =
     totalLoaded === mappableTotal
       ? `${totalLoaded} ingested over ${windowDays} days`
@@ -1488,7 +1488,7 @@ async function loadLiveEvents() {
       );
 
     runtime.liveStats = payload.stats || null;
-    runtime.liveWindowHours = Number(payload.windowHours) || 24 * 7;
+    runtime.liveWindowHours = Number(payload.windowHours) || 24 * 30;
   } catch (_) {
   }
 }
