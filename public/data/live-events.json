@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T02:17:39.849Z",
+  "generatedAt": "2026-09-11T10:19:34.850Z",
   "windowHours": 720,
   "reusedPreviousEvents": false,
   "sources": [
@@ -9,7 +9,7 @@
       "url": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6.1/csv/MODIS_C6_1_Global_24h.csv",
       "ok": false,
       "count": 0,
-      "fetchedAt": "2026-09-11T02:17:39.849Z",
+      "fetchedAt": "2026-09-11T10:19:34.850Z",
       "error": "fetch failed"
     },
     {
@@ -18,7 +18,7 @@
       "url": "https://news.un.org/feed/subscribe/en/news/topic/peace-and-security/feed/rss.xml",
       "ok": true,
       "count": 30,
-      "fetchedAt": "2026-09-11T02:17:39.849Z"
+      "fetchedAt": "2026-09-11T10:19:34.850Z"
     },
     {
       "id": "ceobs_rss",
@@ -26,7 +26,7 @@
       "url": "https://ceobs.org/feed/",
       "ok": true,
       "count": 2,
-      "fetchedAt": "2026-09-11T02:17:39.849Z"
+      "fetchedAt": "2026-09-11T10:19:34.850Z"
     }
   ],
   "stats": {
