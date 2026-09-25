@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T10:53:48.448Z",
+  "generatedAt": "2026-09-25T16:14:04.696Z",
   "results": [
     {
       "id": "nasa-firms",
@@ -9,12 +9,12 @@
       "statusText": "OK",
       "finalUrl": "https://firms.modaps.eosdis.nasa.gov/map/",
       "method": "HEAD",
-      "lastModified": "Mon, 21 Sep 2026 14:00:27 GMT",
-      "etag": "\"6ab1387b-1822\"",
+      "lastModified": "Mon, 21 Sep 2026 14:00:16 GMT",
+      "etag": "\"6ab13870-1822\"",
       "cacheControl": "no-cache",
       "contentType": "text/html",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 266
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 129
     },
     {
       "id": "ceobs-iran-update",
@@ -28,8 +28,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 1486
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 1463
     },
     {
       "id": "acled-60-days-iran",
@@ -43,8 +43,8 @@
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=utf-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 261
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 282
     },
     {
       "id": "acled-iran-live",
@@ -54,12 +54,12 @@
       "statusText": "OK",
       "finalUrl": "https://acleddata.com/iran-crisis-live",
       "method": "HEAD",
-      "lastModified": "Fri, 25 Sep 2026 10:41:55 GMT",
+      "lastModified": "Fri, 25 Sep 2026 14:48:55 GMT",
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=utf-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 195
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 160
     },
     {
       "id": "world-bank-flaring",
@@ -73,8 +73,8 @@
       "etag": null,
       "cacheControl": "public, max-age=1",
       "contentType": "text/html;charset=utf-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 105
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 152
     },
     {
       "id": "emit-catalog",
@@ -88,8 +88,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 176
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 161
     },
     {
       "id": "epa-methane",
@@ -103,8 +103,8 @@
       "etag": null,
       "cacheControl": "private, max-age=0, must-revalidate, must-revalidate, no-cache, private",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 414
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 73
     },
     {
       "id": "ceobs-ukraine",
@@ -118,8 +118,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 1357
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 2756
     },
     {
       "id": "airwars-gaza",
@@ -133,8 +133,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 1327
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 1376
     },
     {
       "id": "unosat-gaza-city",
@@ -148,8 +148,8 @@
       "etag": "\"68e63af9-2b566a\"",
       "cacheControl": "max-age=2592000, public, private",
       "contentType": "application/pdf",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 767
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 521
     },
     {
       "id": "ceobs-sudan",
@@ -163,8 +163,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-09-25T10:53:48.448Z",
-      "responseTimeMs": 1332
+      "checkedAt": "2026-09-25T16:14:04.696Z",
+      "responseTimeMs": 1373
     }
   ]
 }
