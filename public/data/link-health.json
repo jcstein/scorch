@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T21:03:45.521Z",
+  "generatedAt": "2026-10-21T02:43:26.744Z",
   "results": [
     {
       "id": "nasa-firms",
@@ -9,12 +9,12 @@
       "statusText": "OK",
       "finalUrl": "https://firms.modaps.eosdis.nasa.gov/map/",
       "method": "HEAD",
-      "lastModified": "Tue, 20 Oct 2026 17:25:24 GMT",
-      "etag": "\"6ad7a404-1851\"",
+      "lastModified": "Tue, 20 Oct 2026 17:25:09 GMT",
+      "etag": "\"6ad7a3f5-1851\"",
       "cacheControl": "no-cache",
       "contentType": "text/html",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 258
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 124
     },
     {
       "id": "ceobs-iran-update",
@@ -28,8 +28,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 4999
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 1461
     },
     {
       "id": "acled-60-days-iran",
@@ -39,12 +39,12 @@
       "statusText": "OK",
       "finalUrl": "https://acleddata.com/expert-comment/60-days-iran-war-6-conflicts-you-didnt-see",
       "method": "HEAD",
-      "lastModified": "Tue, 20 Oct 2026 17:14:26 GMT",
+      "lastModified": "Wed, 21 Oct 2026 02:43:28 GMT",
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=utf-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 336
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 2077
     },
     {
       "id": "acled-iran-live",
@@ -54,12 +54,12 @@
       "statusText": "OK",
       "finalUrl": "https://acleddata.com/current-crises/daily-data-strikes-across-middle-east",
       "method": "HEAD",
-      "lastModified": "Tue, 20 Oct 2026 16:56:30 GMT",
+      "lastModified": "Wed, 21 Oct 2026 02:11:19 GMT",
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=utf-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 521
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 438
     },
     {
       "id": "world-bank-flaring",
@@ -69,12 +69,12 @@
       "statusText": "OK",
       "finalUrl": "https://www.worldbank.org/en/programs/gasflaringreduction/global-flaring-data",
       "method": "HEAD",
-      "lastModified": "Fri, 16 Oct 2026 23:05:40 GMT",
+      "lastModified": "Fri, 16 Oct 2026 22:50:41 GMT",
       "etag": null,
       "cacheControl": "public, max-age=1",
       "contentType": "text/html;charset=utf-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 220
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 223
     },
     {
       "id": "emit-catalog",
@@ -88,8 +88,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 201
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 191
     },
     {
       "id": "epa-methane",
@@ -103,8 +103,8 @@
       "etag": null,
       "cacheControl": "private, max-age=0, must-revalidate, must-revalidate, no-cache, private",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 276
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 1016
     },
     {
       "id": "ceobs-ukraine",
@@ -118,8 +118,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 1368
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 1243
     },
     {
       "id": "airwars-gaza",
@@ -133,8 +133,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 1814
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 1625
     },
     {
       "id": "unosat-gaza-city",
@@ -148,8 +148,8 @@
       "etag": "\"68e63af9-2b566a\"",
       "cacheControl": "max-age=2592000, public, private",
       "contentType": "application/pdf",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 4534
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 1087
     },
     {
       "id": "ceobs-sudan",
@@ -163,8 +163,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-20T21:03:45.521Z",
-      "responseTimeMs": 1288
+      "checkedAt": "2026-10-21T02:43:26.744Z",
+      "responseTimeMs": 1286
     }
   ]
 }
