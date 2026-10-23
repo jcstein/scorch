@@ -7,10 +7,18 @@ on:
 
 permissions:
   contents: write
+  issues: write
+
+env:
+  ZONE_ALERT_OPEN_MIN: "15"
+  ZONE_ALERT_GROWTH_MIN: "50"
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      pushed: ${{ steps.publish.outputs.pushed }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,10 +37,35 @@ jobs:
           git fetch --depth=1 origin data
           git checkout origin/data -- public/data
 
+      - name: Snapshot previous zones
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/scorch-alert
+          if [ -f public/data/zones.json ]; then
+            cp public/data/zones.json /tmp/scorch-alert/zones.json
+          else
+            printf '%s\n' '{"zones":[]}' > /tmp/scorch-alert/zones.json
+          fi
+          if [ -f public/data/zone-alerts.json ]; then
+            cp public/data/zone-alerts.json /tmp/scorch-alert/zone-alerts.json
+          else
+            printf '%s\n' '{"seeded":false,"sent":[]}' > /tmp/scorch-alert/zone-alerts.json
+          fi
+
       - name: Refresh data files
+        id: refresh
         run: node scripts/refresh-data.mjs
 
+      - name: Apply zone alerts
+        id: alerts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/apply-zone-alerts.mjs /tmp/scorch-alert/zones.json public/data/zones.json public/data/zone-alerts.json /tmp/scorch-alert/zone-alerts.json
+
       - name: Publish data branch
+        id: publish
+        if: steps.refresh.outcome == 'success'
         run: |
           set -euo pipefail
           data_branch="data"
@@ -49,9 +82,39 @@ jobs:
           git add -f -A -- public/data
           if git diff --cached --quiet; then
             echo "No data changes."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: refresh source data"
           git push origin "HEAD:$data_branch"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Fail when zone alerts fail
+        if: steps.alerts.outcome == 'failure'
+        run: |
+          echo "Zone alerts failed. The data branch publish still ran when the refresh itself succeeded."
+          exit 1
+
+  deploy:
+    needs: refresh
+    if: always() && needs.refresh.result != 'cancelled' && (needs.refresh.outputs.pushed == 'true' || (github.event_name == 'workflow_dispatch' && needs.refresh.result == 'success'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Deploy Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-pages-deploy.mjs
