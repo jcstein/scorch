@@ -9,6 +9,14 @@ import {
   tilesForBounds
 } from "./live-layer.js";
 import { LIVE_WINDOW_HOURS } from "./live-window.js";
+import {
+  LINKAGE_KM,
+  MIN_DETECTIONS,
+  ZONE_STATUS_LABEL,
+  parseZoneHash,
+  sparklineGeometry,
+  zoneShareHash
+} from "./zones.js";
 
 const areas = [
   {
@@ -423,6 +431,7 @@ const state = {
   query: "",
   activeAreaId: "iran-gulf",
   activeSourceId: null,
+  activeZoneId: null,
   liveShown: LIVE_PAGE_SIZE
 };
 
@@ -442,6 +451,11 @@ const runtime = {
   linkHealth: new Map(),
   generatedAt: null,
   liveStatus: "loading",
+  zones: [],
+  zoneStatus: "loading",
+  zoneGeneratedAt: null,
+  zoneLayer: null,
+  pendingZoneId: parseZoneHash(window.location.hash),
   hasInitialFit: false,
   pendingLivePopupId: null,
   holdPopup: false,
@@ -454,6 +468,9 @@ const els = {
   sourceGrid: document.querySelector("#source-grid-inner"),
   liveSummary: document.querySelector("#live-summary"),
   liveEventsList: document.querySelector("#live-events-list"),
+  zonesSummary: document.querySelector("#zones-summary"),
+  zonesList: document.querySelector("#zones-list"),
+  zonesAnnounce: document.querySelector("#zones-announce"),
   resultsSummary: document.querySelector("#results-summary"),
   regionFilters: document.querySelector("#region-filters"),
   signalFilters: document.querySelector("#signal-filters"),
@@ -1905,14 +1922,288 @@ function renderAll() {
   renderFilters();
   renderSources(visibleSources);
   renderLiveEvents(visibleLiveEvents);
+  renderZones();
   renderMapPanel(visibleSources, areaStats);
 
-  if (!runtime.hasInitialFit && runtime.map && visibleSources.length) {
+  if (!runtime.hasInitialFit && runtime.map && visibleSources.length && !runtime.pendingZoneId) {
     fitArea(state.activeAreaId || "iran-gulf", { animate: false });
     runtime.hasInitialFit = true;
   }
 
   updateMap(visibleSources, areaStats, visibleLiveEvents);
+}
+
+function normalizeZone(zone) {
+  const lat = Number(zone?.centroid?.[0]);
+  const lon = Number(zone?.centroid?.[1]);
+  if (!zone?.id || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  const bbox = Array.isArray(zone.bbox) && zone.bbox.length === 4 ? zone.bbox.map(Number) : [lat, lon, lat, lon];
+  if (bbox.some((value) => !Number.isFinite(value))) return null;
+  const status = ZONE_STATUS_LABEL[zone.status] ? zone.status : "steady";
+  return {
+    id: String(zone.id),
+    name: zone.name || String(zone.id),
+    status,
+    centroid: [lat, lon],
+    bbox,
+    first_seen: zone.first_seen || "",
+    last_seen: zone.last_seen || "",
+    peak_frp: Number(zone.peak_frp) || 0,
+    count: Number(zone.count) || 0,
+    series: Array.isArray(zone.series) ? zone.series : []
+  };
+}
+
+function buildSparkline(zone) {
+  const geometry = sparklineGeometry(zone.series);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "zone-spark");
+  svg.setAttribute("viewBox", "0 0 84 28");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", geometry.label);
+  if (geometry.points) {
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    line.setAttribute("points", geometry.points);
+    line.setAttribute("fill", "none");
+    line.setAttribute("stroke", "currentColor");
+    line.setAttribute("stroke-width", "2");
+    line.setAttribute("stroke-linejoin", "round");
+    line.setAttribute("stroke-linecap", "round");
+    svg.appendChild(line);
+  }
+  if (geometry.dot) {
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", String(geometry.dot[0]));
+    dot.setAttribute("cy", String(geometry.dot[1]));
+    dot.setAttribute("r", "2.5");
+    dot.setAttribute("fill", "currentColor");
+    svg.appendChild(dot);
+  }
+  return svg;
+}
+
+function buildZoneCard(zone) {
+  const item = document.createElement("li");
+  item.className = "zone-card";
+  if (zone.id === state.activeZoneId) item.classList.add("is-active");
+
+  const top = document.createElement("div");
+  top.className = "zone-card-top";
+  const title = document.createElement("h3");
+  title.className = "zone-name";
+  title.textContent = zone.name;
+  const status = document.createElement("span");
+  status.className = `zone-status zone-status-${zone.status}`;
+  status.textContent = ZONE_STATUS_LABEL[zone.status] || zone.status;
+  top.append(title, status);
+
+  const meta = document.createElement("p");
+  meta.className = "zone-meta";
+  const detections = `${zone.count.toLocaleString()} detection${zone.count === 1 ? "" : "s"}`;
+  meta.textContent = `${detections} · peak ${Number(zone.peak_frp || 0).toFixed(1)} MW · since ${formatEventTime(zone.first_seen)}`;
+
+  const actions = document.createElement("div");
+  actions.className = "zone-actions";
+  const show = document.createElement("a");
+  show.className = "button button-primary";
+  show.href = `#${zoneShareHash(zone.id)}`;
+  show.dataset.zoneId = zone.id;
+  show.textContent = "Show on map";
+  const copy = document.createElement("button");
+  copy.className = "button button-ghost";
+  copy.type = "button";
+  copy.dataset.copyZone = zone.id;
+  copy.textContent = "Copy link";
+  actions.append(show, copy);
+
+  item.append(top, buildSparkline(zone), meta, actions);
+  return item;
+}
+
+function renderZoneLayer() {
+  if (!runtime.map || !L) return;
+  if (runtime.zoneLayer) runtime.map.removeLayer(runtime.zoneLayer);
+  const group = L.layerGroup();
+  for (const zone of runtime.zones) {
+    if (zone.status === "closed" || zone.bbox[1] > zone.bbox[3]) continue;
+    const [south, west, north, east] = zone.bbox;
+    const emerging = zone.status === "new" || zone.status === "growing";
+    const active = zone.id === state.activeZoneId;
+    const rect = L.rectangle(
+      [
+        [south, west],
+        [north, east]
+      ],
+      {
+        color: emerging ? "#b84b1f" : "#1b6e65",
+        weight: active ? 3 : 1.6,
+        opacity: 0.95,
+        fillColor: emerging ? "#b84b1f" : "#1b6e65",
+        fillOpacity: active ? 0.18 : 0.07
+      }
+    );
+    rect.bindTooltip(`${zone.name}. ${ZONE_STATUS_LABEL[zone.status] || zone.status}. Unconfirmed heat.`, {
+      sticky: true
+    });
+    rect.on("click", () => {
+      focusZone(zone.id, { scroll: false });
+    });
+    rect.addTo(group);
+  }
+  group.addTo(runtime.map);
+  group.bringToBack();
+  runtime.zoneLayer = group;
+}
+
+function renderZones() {
+  if (!els.zonesList || !els.zonesSummary) return;
+  els.zonesList.replaceChildren();
+  if (runtime.zoneStatus === "loading") {
+    els.zonesSummary.textContent = "Loading hotspot zones…";
+    return;
+  }
+  if (runtime.zoneStatus === "error") {
+    els.zonesSummary.textContent = "The zone file did not load. The map and reports are still available.";
+    return;
+  }
+
+  const active = runtime.zones.filter((zone) => zone.status !== "closed");
+  const emerging = active.filter((zone) => zone.status === "new" || zone.status === "growing");
+  const closed = runtime.zones.length - active.length;
+  if (!active.length) {
+    els.zonesSummary.textContent = `No hotspot zones in the latest pass. A zone needs at least ${MIN_DETECTIONS} unconfirmed detections within about ${LINKAGE_KM} km.`;
+    renderZoneLayer();
+    return;
+  }
+
+  const closedNote = closed
+    ? ` ${closed} closed ${closed === 1 ? "zone is" : "zones are"} still on record.`
+    : "";
+  els.zonesSummary.textContent = `${active.length} active hotspot ${active.length === 1 ? "zone" : "zones"}, ${emerging.length} new or growing.${closedNote} Heat is not confirmed damage.`;
+  const rank = { new: 0, growing: 1, steady: 2, fading: 3 };
+  const ordered = [...active].sort(
+    (a, b) =>
+      (rank[a.status] ?? 9) - (rank[b.status] ?? 9) ||
+      b.peak_frp - a.peak_frp ||
+      b.count - a.count ||
+      a.name.localeCompare(b.name)
+  );
+  const featured = ordered.slice(0, 8);
+  const extra = ordered.slice(8);
+  featured.forEach((zone) => {
+    els.zonesList.appendChild(buildZoneCard(zone));
+  });
+  if (extra.length) {
+    const more = document.createElement("li");
+    more.className = "zone-more";
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = `Show ${extra.length} more zone${extra.length === 1 ? "" : "s"}`;
+    const rest = document.createElement("ul");
+    rest.className = "zones-list zones-list-more";
+    extra.forEach((zone) => {
+      rest.appendChild(buildZoneCard(zone));
+    });
+    details.append(summary, rest);
+    more.appendChild(details);
+    els.zonesList.appendChild(more);
+  }
+  renderZoneLayer();
+}
+
+function focusZone(id, options = {}) {
+  const zone = runtime.zones.find((entry) => entry.id === id);
+  if (!zone || !runtime.map) return false;
+  state.activeZoneId = id;
+  const hash = `#${zoneShareHash(id)}`;
+  const historyMode = options.historyMode || "push";
+  if (historyMode !== "none" && window.location.hash !== hash) {
+    const next = `${window.location.pathname}${window.location.search}${hash}`;
+    if (historyMode === "replace") window.history.replaceState(null, "", next);
+    else window.history.pushState(null, "", next);
+  }
+  const [south, west, north, east] = zone.bbox;
+  if (west <= east) {
+    runtime.map.fitBounds(
+      [
+        [south, west],
+        [north, east]
+      ],
+      { padding: [40, 40], maxZoom: 8, animate: options.animate !== false }
+    );
+  } else {
+    runtime.map.setView(zone.centroid, 7, { animate: options.animate !== false });
+  }
+  if (options.scroll !== false) scrollMapIntoView();
+  renderZones();
+  return true;
+}
+
+function zonePageUrl(id) {
+  const url = new URL(window.location.href);
+  url.hash = zoneShareHash(id);
+  return url.toString();
+}
+
+async function copyZoneLink(id) {
+  const url = zonePageUrl(id);
+  let message = "Link copied";
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch (_) {
+    message = url;
+  }
+  if (els.zonesAnnounce) els.zonesAnnounce.textContent = message === url ? `Link: ${url}` : "Link copied";
+  const button = els.zonesList?.querySelector(`[data-copy-zone="${id}"]`);
+  if (!button) return;
+  const previous = button.textContent;
+  button.textContent = "Copied";
+  window.setTimeout(() => {
+    if (button.isConnected && button.textContent === "Copied") button.textContent = previous;
+  }, 1600);
+}
+
+function setupZoneLinks() {
+  if (!els.zonesList) return;
+  els.zonesList.addEventListener("click", (event) => {
+    const copy = event.target.closest("[data-copy-zone]");
+    if (copy) {
+      event.preventDefault();
+      copyZoneLink(copy.dataset.copyZone);
+      return;
+    }
+    const link = event.target.closest("[data-zone-id]");
+    if (!link) return;
+    if (parseZoneHash(window.location.hash) === link.dataset.zoneId) {
+      event.preventDefault();
+      focusZone(link.dataset.zoneId, { historyMode: "none" });
+    }
+  });
+  window.addEventListener("hashchange", () => {
+    const id = parseZoneHash(window.location.hash);
+    if (!id) return;
+    focusZone(id, { historyMode: "none" });
+  });
+}
+
+async function loadZones() {
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL}data/zones.json`, { cache: "no-store" });
+    if (!response.ok) {
+      runtime.zoneStatus = "error";
+      return;
+    }
+    const payload = await response.json();
+    if (!Array.isArray(payload?.zones)) {
+      runtime.zoneStatus = "error";
+      return;
+    }
+    runtime.zones = payload.zones.map(normalizeZone).filter(Boolean);
+    runtime.zoneGeneratedAt = payload.generatedAt || null;
+    runtime.zoneStatus = "ready";
+  } catch (_) {
+    runtime.zoneStatus = "error";
+  }
 }
 
 async function init() {
@@ -1922,10 +2213,24 @@ async function init() {
   setupSearch();
   setupMapControls();
   setupViewToggle();
+  setupZoneLinks();
   clearLegacyServiceWorkers();
   renderAll();
-  await Promise.all([loadRefreshTimestamp(), loadLiveEvents(), loadLinkHealth()]);
+  await Promise.all([loadRefreshTimestamp(), loadLiveEvents(), loadLinkHealth(), loadZones()]);
   renderAll();
+  if (runtime.pendingZoneId) {
+    const found = focusZone(runtime.pendingZoneId, {
+      historyMode: "none",
+      scroll: false,
+      animate: false
+    });
+    runtime.pendingZoneId = found ? null : runtime.pendingZoneId;
+    if (found) runtime.hasInitialFit = true;
+  }
+  if (!runtime.hasInitialFit && runtime.map) {
+    fitArea(state.activeAreaId || "iran-gulf", { animate: false });
+    runtime.hasInitialFit = true;
+  }
 }
 
 init();
