@@ -32,9 +32,10 @@ Generated files:
 
 - `public/data/refresh.json`
 - `public/data/link-health.json`
-- `public/data/live-events.json`
+- `public/data/live-summary.json` — reports, counts, and pre-aggregated heat cells for the first view
+- `public/data/thermal/<tile>.json` — sensor points for one 10° tile, loaded when the map is zoomed in
 
-Those files are not committed on `main`. The refresh workflow publishes them on `cursor/jcs/source-data-595d`. `scripts/fetch-data.mjs`, which `npm run build` runs first, downloads them from that branch when they are missing. A failed download exits non-zero, so Cloudflare Pages and GitHub Pages both keep the last good deployment. Pull requests should not add or modify `public/data`.
+Those files are not committed on `main`. The refresh workflow publishes them on `data`. `scripts/fetch-data.mjs`, which `npm run build` runs first, downloads the summary from that branch and then each tile it lists. A failed download exits non-zero, so Cloudflare Pages and GitHub Pages both keep the last good deployment. Pull requests should not add or modify `public/data`.
 
 For a local copy without a full build:
 

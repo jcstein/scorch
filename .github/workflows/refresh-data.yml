@@ -22,24 +22,31 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Refresh data files
+      - name: Seed previous data
         run: |
+          set -euo pipefail
           mkdir -p public/data
-          node scripts/refresh-data.mjs
+          git fetch --depth=1 origin data
+          git checkout origin/data -- public/data
+
+      - name: Refresh data files
+        run: node scripts/refresh-data.mjs
 
       - name: Publish data branch
         run: |
           set -euo pipefail
-          data_branch="cursor/jcs/source-data-595d"
+          data_branch="data"
+          rm -rf /tmp/scorch-data
           mkdir -p /tmp/scorch-data
-          cp public/data/refresh.json public/data/link-health.json public/data/live-events.json /tmp/scorch-data/
+          cp -a public/data /tmp/scorch-data/data
           rm -rf public/data
           git reset --hard
           git fetch --depth=1 origin "$data_branch"
           git checkout -B "$data_branch" "origin/$data_branch"
+          rm -rf public/data
           mkdir -p public/data
-          cp /tmp/scorch-data/refresh.json /tmp/scorch-data/link-health.json /tmp/scorch-data/live-events.json public/data/
-          git add public/data/refresh.json public/data/link-health.json public/data/live-events.json
+          cp -a /tmp/scorch-data/data/. public/data/
+          git add -A public/data
           if git diff --cached --quiet; then
             echo "No data changes."
             exit 0

@@ -1,6 +1,13 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { presentEvent, selectThermalForView } from "./live-layer.js";
+import {
+  cellSizeForZoom,
+  decodeThermalPoint,
+  presentEvent,
+  selectThermalCells,
+  selectThermalForView,
+  tilesForBounds
+} from "./live-layer.js";
 import { LIVE_WINDOW_HOURS } from "./live-window.js";
 
 const areas = [
@@ -427,12 +434,19 @@ const runtime = {
   reportLayer: null,
   liveEvents: [],
   liveStats: null,
+  thermal: null,
+  thermalTiles: new Map(),
+  thermalTilePromises: new Map(),
+  thermalTileFailed: new Set(),
   liveWindowHours: LIVE_WINDOW_HOURS,
   linkHealth: new Map(),
   generatedAt: null,
   liveStatus: "loading",
   hasInitialFit: false,
-  pendingLivePopupId: null
+  pendingLivePopupId: null,
+  holdPopup: false,
+  mapMoveTimer: null,
+  thermalCanvas: null
 };
 
 const els = {
@@ -636,6 +650,49 @@ function getVisibleLiveEvents() {
   return list.sort((a, b) => new Date(b.eventTime) - new Date(a.eventTime));
 }
 
+function thermalSignalAllowed() {
+  return state.signal === "All" || state.signal === "Thermal" || state.signal === "Unconfirmed";
+}
+
+function thermalAreaIds() {
+  if (state.region === "All" || state.region === "Global") return null;
+  return areas.filter((area) => area.filterValue === state.region).map((area) => area.id);
+}
+
+function genericThermalQuery() {
+  if (!state.query) return true;
+  const haystack = normalize("unconfirmed heat nasa firms thermal sensor");
+  return haystack.includes(normalize(state.query));
+}
+
+function countAreaInCell(cell, areaId) {
+  const count = Number(cell?.areas?.[areaId]) || 0;
+  if (!count || !thermalSignalAllowed()) return 0;
+  const allowed = thermalAreaIds();
+  if (allowed && !allowed.includes(areaId)) return 0;
+  if (genericThermalQuery()) return count;
+  const area = areasById.get(areaId);
+  const haystack = normalize(`${area?.filterValue || ""} ${area?.name || ""} unconfirmed heat`);
+  return haystack.includes(normalize(state.query)) ? count : 0;
+}
+
+function cellThermalCount(cell) {
+  return Object.keys(cell?.areas || {}).reduce((sum, areaId) => sum + countAreaInCell(cell, areaId), 0);
+}
+
+function filteredThermalTotal() {
+  const cells = runtime.thermal?.cells?.["1"] || [];
+  return cells.reduce((sum, cell) => sum + cellThermalCount(cell), 0);
+}
+
+function hydrateThermalPoint(row) {
+  const event = decodeThermalPoint(row, runtime.thermal?.areas || [], runtime.generatedAt);
+  const area = areasById.get(event.areaId);
+  event.region = area?.filterValue || "Global";
+  event.groups = [...new Set([event.region, "Global"])];
+  return event;
+}
+
 function getLiveIngestTotal() {
   const totalFromStats = Number(runtime.liveStats?.totalEvents);
   if (Number.isFinite(totalFromStats) && totalFromStats >= 0) {
@@ -679,6 +736,17 @@ function computeAreaStats(visibleSources, visibleLiveEvents = []) {
     stat.count += 1;
     stat.liveCount += 1;
     stat.liveEvents.push(event);
+  });
+
+  const cells = runtime.thermal?.cells?.["1"] || [];
+  cells.forEach((cell) => {
+    Object.keys(cell.areas || {}).forEach((areaId) => {
+      const count = countAreaInCell(cell, areaId);
+      if (!count || !areasById.has(areaId)) return;
+      const stat = ensureStat(areaId);
+      stat.count += count;
+      stat.liveCount += count;
+    });
   });
 
   stats.forEach((stat) => {
@@ -973,8 +1041,8 @@ function renderLiveEvents(visibleLiveEvents) {
   }
 
   const reports = visibleLiveEvents.filter((event) => event.type !== "thermal");
-  const heat = visibleLiveEvents.filter((event) => event.type === "thermal");
-  const ordered = [...reports, ...heat];
+  const heatCount = filteredThermalTotal();
+  const ordered = reports;
   const visibleCount = ordered.length;
   const windowDays = Math.round((runtime.liveWindowHours || LIVE_WINDOW_HOURS) / 24);
   if (runtime.liveStatus === "loading") {
@@ -986,8 +1054,8 @@ function renderLiveEvents(visibleLiveEvents) {
     els.liveSummary.textContent = "No live reports have been ingested yet.";
   } else {
     const reportLabel = reports.length === 1 ? "report" : "reports";
-    const heatLabel = heat.length === 1 ? "heat detection" : "heat detections";
-    els.liveSummary.textContent = `${reports.length} ${reportLabel} and ${heat.length} unconfirmed ${heatLabel} match these filters. Reports are kept for ${windowDays} days. Heat is the latest FIRMS 24-hour file, and the map draws only the current view.`;
+    const heatLabel = heatCount === 1 ? "heat detection" : "heat detections";
+    els.liveSummary.textContent = `${reports.length} ${reportLabel} and ${heatCount.toLocaleString()} unconfirmed ${heatLabel} match these filters. Reports are kept for ${windowDays} days. Heat is the latest FIRMS 24-hour file, and the map draws only the current view.`;
   }
 
   els.liveEventsList.innerHTML = "";
@@ -1009,12 +1077,19 @@ function renderLiveEvents(visibleLiveEvents) {
     return;
   }
 
-  if (!visibleCount) {
+  if (!visibleCount && !heatCount) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
     empty.textContent = "No live reports or heat detections match these filters.";
     els.liveEventsList.appendChild(empty);
     return;
+  }
+
+  if (heatCount > 0) {
+    const note = document.createElement("p");
+    note.className = "live-event-note";
+    note.textContent = "Unconfirmed heat is drawn on the map. Zoom in for individual sensor points.";
+    els.liveEventsList.appendChild(note);
   }
 
   const page = ordered.slice(0, state.liveShown);
@@ -1256,11 +1331,9 @@ function renderLiveLayer(visibleLiveEvents) {
   const canvas = runtime.thermalCanvas || L.canvas({ padding: 0.2 });
   runtime.thermalCanvas = canvas;
   const reports = visibleLiveEvents.filter((event) => event.type !== "thermal");
-  const selection = selectThermalForView(visibleLiveEvents, {
-    zoom: runtime.map.getZoom(),
-    bounds: currentMapBounds(),
-    pinId: runtime.pendingLivePopupId
-  });
+  const zoom = runtime.map.getZoom();
+  const bounds = currentMapBounds();
+  const selection = selectThermalSelection(zoom, bounds);
 
   reports.forEach((event) => {
     const view = presentEvent(event);
@@ -1328,10 +1401,82 @@ function renderLiveLayer(visibleLiveEvents) {
   updateMapStatus(selection, reports.length);
 }
 
+function selectThermalSelection(zoom, bounds) {
+  const empty = {
+    mode: cellSizeForZoom(zoom) === 0 ? "points" : "clusters",
+    shown: [],
+    totalInView: 0,
+    clusterTotal: 0,
+    capped: false
+  };
+  if (!thermalSignalAllowed() || runtime.liveStatus !== "ready") return empty;
+  const cell = cellSizeForZoom(zoom);
+  if (cell !== 0) {
+    return selectThermalCells(runtime.thermal?.cells?.[String(cell)] || [], {
+      bounds,
+      cell,
+      countFor: cellThermalCount
+    });
+  }
+
+  const known = new Set((runtime.thermal?.tiles || []).map((tile) => tile.id));
+  const needed = tilesForBounds(bounds, known);
+  const missing = needed.filter(
+    (id) => !runtime.thermalTiles.has(id) && !runtime.thermalTileFailed.has(id)
+  );
+  if (missing.length) loadThermalTiles(missing);
+  const points = [];
+  needed.forEach((id) => {
+    const rows = runtime.thermalTiles.get(id);
+    if (!rows) return;
+    rows.forEach((row) => {
+      const event = hydrateThermalPoint(row);
+      if (liveEventMatches(event)) points.push(event);
+    });
+  });
+  const selection = selectThermalForView(points, {
+    zoom,
+    bounds,
+    pinId: runtime.pendingLivePopupId
+  });
+  selection.loading = missing.length > 0;
+  selection.incomplete = needed.some((id) => runtime.thermalTileFailed.has(id));
+  return selection;
+}
+
+function loadThermalTiles(ids) {
+  const started = [];
+  ids.forEach((id) => {
+    if (runtime.thermalTiles.has(id) || runtime.thermalTilePromises.has(id)) return;
+    started.push(id);
+    const promise = (async () => {
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}data/thermal/${id}.json`, {
+          cache: "no-store"
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        const payload = await response.json();
+        if (!Array.isArray(payload.points)) throw new Error("points");
+        runtime.thermalTiles.set(id, payload.points);
+      } catch (_) {
+        runtime.thermalTileFailed.add(id);
+      }
+    })();
+    runtime.thermalTilePromises.set(id, promise);
+  });
+  if (!started.length) return;
+  Promise.all(started.map((id) => runtime.thermalTilePromises.get(id))).then(() => {
+    if (!runtime.map) return;
+    renderLiveLayer(getVisibleLiveEvents());
+  });
+}
+
 function updateMapStatus(selection, reportCount) {
   if (!els.mapStatus) return;
-  if (runtime.liveStatus === "loading") {
-    els.mapStatus.textContent = "Loading satellite heat and recent reports…";
+  if (runtime.liveStatus === "loading" || selection.loading) {
+    els.mapStatus.textContent = selection.loading
+      ? "Loading sensor points for this view…"
+      : "Loading satellite heat and recent reports…";
     return;
   }
   if (runtime.liveStatus === "error") {
@@ -1343,7 +1488,8 @@ function updateMapStatus(selection, reportCount) {
     selection.mode === "clusters"
       ? `${selection.totalInView.toLocaleString()} unconfirmed heat detections are in view, grouped into ${selection.shown.length.toLocaleString()} cells${selection.capped ? " (busiest cells only)" : ""}. Zoom in to separate them.`
       : `Showing ${selection.shown.length.toLocaleString()} of ${selection.totalInView.toLocaleString()} unconfirmed heat points in view${selection.capped ? ", strongest first" : ""}.`;
-  els.mapStatus.textContent = `${heatSentence} ${reportCount.toLocaleString()} report${reportCount === 1 ? "" : "s"} use approximate locations. Satellite file from ${refreshed}.`;
+  const incomplete = selection.incomplete ? " Some sensor points in this view did not load." : "";
+  els.mapStatus.textContent = `${heatSentence} ${reportCount.toLocaleString()} report${reportCount === 1 ? "" : "s"} use approximate locations. Satellite file from ${refreshed}.${incomplete}`;
 }
 
 function setupMap() {
@@ -1641,23 +1787,29 @@ function normalizeLiveEvent(event) {
 
 async function loadLiveEvents() {
   try {
-    const response = await fetch(`${import.meta.env.BASE_URL}data/live-events.json`, { cache: "no-store" });
+    const response = await fetch(`${import.meta.env.BASE_URL}data/live-summary.json`, { cache: "no-store" });
     if (!response.ok) {
       runtime.liveStatus = "error";
       return;
     }
 
     const payload = await response.json();
-    if (!payload || !Array.isArray(payload.events)) {
+    const reports = Array.isArray(payload?.reports) ? payload.reports : null;
+    const cells = payload?.thermal?.cells;
+    if (!reports || !cells || !Array.isArray(cells["1"]) || !Array.isArray(cells["2"])) {
       runtime.liveStatus = "error";
       return;
     }
 
-    runtime.liveEvents = payload.events
+    runtime.liveEvents = reports
       .map(normalizeLiveEvent)
       .filter(
         (event) => Number.isFinite(event.lat) && Number.isFinite(event.lon) && event.eventTime
       );
+    runtime.thermal = payload.thermal;
+    runtime.thermalTiles = new Map();
+    runtime.thermalTilePromises = new Map();
+    runtime.thermalTileFailed = new Set();
 
     runtime.liveStats = payload.stats || null;
     runtime.liveWindowHours = Number(payload.windowHours) || LIVE_WINDOW_HOURS;

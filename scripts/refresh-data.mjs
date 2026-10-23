@@ -1,6 +1,7 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { decodeThermalPoint, packThermalEvents } from "../live-layer.js";
 import { LIVE_WINDOW_HOURS } from "../live-window.js";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -8,7 +9,10 @@ const repoRoot = resolve(scriptDir, "..");
 const appPath = resolve(repoRoot, "app.js");
 const refreshPath = resolve(repoRoot, "public", "data", "refresh.json");
 const linkHealthPath = resolve(repoRoot, "public", "data", "link-health.json");
-const liveEventsPath = resolve(repoRoot, "public", "data", "live-events.json");
+const dataDir = resolve(repoRoot, "public", "data");
+const liveEventsPath = resolve(dataDir, "live-events.json");
+const summaryPath = resolve(dataDir, "live-summary.json");
+const thermalDir = resolve(dataDir, "thermal");
 
 const SOURCE_REGEX = /id:\s*"([^"]+)"[\s\S]*?link:\s*"([^"]+)"/g;
 const USER_AGENT = "scorch-refresh/2.0 (+https://github.com/jcstein/damage)";
@@ -613,17 +617,66 @@ async function ingestCeobs() {
   };
 }
 
-async function readPreviousLivePayload() {
+async function readPreviousLiveEvents() {
   try {
-    const text = await readFile(liveEventsPath, "utf8");
-    const payload = JSON.parse(text);
-    if (!payload || !Array.isArray(payload.events)) {
-      return null;
+    const payload = JSON.parse(await readFile(summaryPath, "utf8"));
+    const reports = Array.isArray(payload.reports) ? payload.reports : [];
+    const areas = payload.thermal?.areas || [];
+    const events = [...reports];
+    for (const tile of payload.thermal?.tiles || []) {
+      const tilePayload = JSON.parse(await readFile(resolve(thermalDir, `${tile.id}.json`), "utf8"));
+      for (const row of tilePayload.points || []) {
+        events.push(decodeThermalPoint(row, areas, payload.generatedAt));
+      }
     }
-    return payload;
+    if (events.length) return events;
   } catch (_) {
-    return null;
   }
+
+  try {
+    const payload = JSON.parse(await readFile(liveEventsPath, "utf8"));
+    if (Array.isArray(payload?.events) && payload.events.length) return payload.events;
+  } catch (_) {
+  }
+  return null;
+}
+
+async function writeLivePayload(livePayload) {
+  const reports = livePayload.events.filter((event) => event.type !== "thermal");
+  const packed = packThermalEvents(livePayload.events);
+  const summary = {
+    generatedAt: livePayload.generatedAt,
+    windowHours: livePayload.windowHours,
+    reusedPreviousEvents: livePayload.reusedPreviousEvents,
+    sources: livePayload.sources,
+    stats: livePayload.stats,
+    reports,
+    thermal: {
+      total: packed.total,
+      areas: packed.areas,
+      cells: packed.cells,
+      tiles: packed.tiles.map(({ id, count, maxFrp }) => ({ id, count, maxFrp }))
+    }
+  };
+
+  await mkdir(thermalDir, { recursive: true });
+  const keep = new Set(packed.tiles.map((tile) => `${tile.id}.json`));
+  const existing = await readdir(thermalDir).catch(() => []);
+  await Promise.all(
+    existing
+      .filter((name) => !keep.has(name))
+      .map((name) => rm(resolve(thermalDir, name), { force: true }))
+  );
+  await Promise.all(
+    packed.tiles.map((tile) =>
+      writeFile(
+        resolve(thermalDir, `${tile.id}.json`),
+        `${JSON.stringify({ id: tile.id, points: tile.points })}\n`
+      )
+    )
+  );
+  await writeFile(summaryPath, `${JSON.stringify(summary)}\n`);
+  await rm(liveEventsPath, { force: true });
 }
 
 function computeLiveStats(events) {
@@ -776,9 +829,9 @@ async function main() {
 
   let reusedPreviousEvents = false;
   if (!liveEvents.length) {
-    const previous = await readPreviousLivePayload();
-    if (previous?.events?.length) {
-      liveEvents = previous.events;
+    const previous = await readPreviousLiveEvents();
+    if (previous?.length) {
+      liveEvents = previous;
       reusedPreviousEvents = true;
     }
   }
@@ -796,7 +849,7 @@ async function main() {
     liveEventsByType: liveStats.byType,
     liveSourcesHealthy: healthyLiveSources,
     liveSourcesTotal: ingestSources.length,
-    scriptVersion: 2
+    scriptVersion: 3
   };
 
   const healthPayload = {
@@ -813,9 +866,10 @@ async function main() {
     events: liveEvents
   };
 
+  await mkdir(dataDir, { recursive: true });
   await writeFile(refreshPath, `${JSON.stringify(refreshPayload, null, 2)}\n`);
   await writeFile(linkHealthPath, `${JSON.stringify(healthPayload, null, 2)}\n`);
-  await writeFile(liveEventsPath, `${JSON.stringify(livePayload, null, 2)}\n`);
+  await writeLivePayload(livePayload);
 }
 
 main().catch((error) => {
