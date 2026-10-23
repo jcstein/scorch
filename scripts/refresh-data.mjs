@@ -470,7 +470,6 @@ async function ingestFirms() {
       id: buildEventId("firms", row.acq_date, row.acq_time, lat.toFixed(3), lon.toFixed(3)),
       type: "thermal",
       severity: inferSeverityFromFirms(frp),
-      title: "FIRMS thermal anomaly",
       summary: summarize(summaryBits.join(", ")),
       region: area.region,
       groups: [...new Set([area.region, "Global"])],
@@ -479,9 +478,9 @@ async function ingestFirms() {
       lon,
       eventTime,
       sourceName: "NASA FIRMS",
-      sourceUrl: feed.url,
       link: "https://firms.modaps.eosdis.nasa.gov/map/",
-      signals: ["Thermal", "Oil Fires", "Satellite"],
+      signals: ["Thermal", "Unconfirmed"],
+      locationPrecision: "sensor",
       frp: Number.isFinite(frp) ? frp : null
     });
   }
@@ -538,7 +537,8 @@ async function ingestUnNews() {
       sourceName: "UN News",
       sourceUrl: feed.url,
       link,
-      signals: enrichSignals(["Conflict Events", "Civilian Harm"], text)
+      signals: enrichSignals(["Conflict Events", "Civilian Harm"], text),
+      locationPrecision: "approximate"
     });
   }
 
@@ -594,7 +594,8 @@ async function ingestCeobs() {
       sourceName: "CEOBS",
       sourceUrl: feed.url,
       link,
-      signals: enrichSignals(["Environmental Risk", "Oil Fires", "Air", "Water"], text)
+      signals: enrichSignals(["Environmental Risk", "Oil Fires", "Air", "Water"], text),
+      locationPrecision: "approximate"
     });
   }
 
@@ -673,8 +674,30 @@ async function checkUrl(url) {
 
   try {
     const head = await attempt("HEAD");
-    if (head.ok || head.status === 405 || head.status === 403) {
+    if (head.ok || head.status === 405) {
       return head;
+    }
+    if (head.status === 403) {
+      try {
+        const got = await attempt("GET");
+        if (got.ok) return got;
+        if (got.status === 403) {
+          return {
+            ...got,
+            ok: false,
+            inconclusive: true,
+            note: "The server forbids both HEAD and GET from this checker."
+          };
+        }
+        return got;
+      } catch (error) {
+        return {
+          ...head,
+          ok: false,
+          inconclusive: true,
+          note: error instanceof Error ? error.message : String(error)
+        };
+      }
     }
   } catch (_) {
   }
@@ -718,6 +741,10 @@ async function main() {
   }
 
   const healthySources = healthResults.filter((result) => result.ok).length;
+  const inconclusiveSources = healthResults.filter((result) => result.inconclusive).length;
+  const failingSources = healthResults.filter(
+    (result) => !result.ok && !result.inconclusive
+  ).length;
 
   const ingestSources = [];
   let liveEvents = [];
@@ -763,7 +790,8 @@ async function main() {
     generatedAt,
     totalSources: sources.length,
     healthySources,
-    failingSources: sources.length - healthySources,
+    failingSources,
+    inconclusiveSources,
     liveEventsTotal: liveStats.totalEvents,
     liveEventsByType: liveStats.byType,
     liveSourcesHealthy: healthyLiveSources,

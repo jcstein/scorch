@@ -1,6 +1,6 @@
 # Scorch
 
-Scorch is a static web app/PWA for tracking war damage, oil fires, and emissions through public sources.
+Scorch is a static site for comparing public reports of conflict damage, oil fires, and emissions with unconfirmed satellite heat.
 
 ## Local Run
 
