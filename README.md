@@ -22,9 +22,22 @@ This repo deploys through `.github/workflows/pages.yml` on every push to `main`.
 - UN News Peace and Security RSS
 - CEOBS RSS
 
-- `data/refresh.json`
-- `data/link-health.json`
-- `data/live-events.json`
+Generated files:
+
+- `public/data/refresh.json`
+- `public/data/link-health.json`
+- `public/data/live-events.json`
+
+Those files are not committed on `main`. The refresh workflow publishes them on `cursor/jcs/source-data-595d`, and the Pages build copies that branch into `public/data` before `npm run build`. If that copy fails, the Pages job fails and the previous deployment stays up. Pull requests should not add or modify `public/data` (deleting them from `main` is the one-time move in the pipeline change).
+
+For a local copy of the latest payload:
+
+```bash
+git fetch origin cursor/jcs/source-data-595d
+git checkout origin/cursor/jcs/source-data-595d -- public/data
+```
+
+Or regenerate it with `node scripts/refresh-data.mjs` (that creates `public/data` if you `mkdir -p public/data` first).
 
 Automation lives in `.github/workflows/refresh-data.yml` with cron:
 
