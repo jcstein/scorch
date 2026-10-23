@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -21,16 +23,28 @@ jobs:
           node-version: "20"
 
       - name: Refresh data files
-        run: node scripts/refresh-data.mjs
-
-      - name: Commit and push changes
         run: |
-          if git diff --quiet; then
+          mkdir -p public/data
+          node scripts/refresh-data.mjs
+
+      - name: Publish data branch
+        run: |
+          set -euo pipefail
+          data_branch="cursor/jcs/source-data-595d"
+          mkdir -p /tmp/scorch-data
+          cp public/data/refresh.json public/data/link-health.json public/data/live-events.json /tmp/scorch-data/
+          rm -rf public/data
+          git reset --hard
+          git fetch --depth=1 origin "$data_branch"
+          git checkout -B "$data_branch" "origin/$data_branch"
+          mkdir -p public/data
+          cp /tmp/scorch-data/refresh.json /tmp/scorch-data/link-health.json /tmp/scorch-data/live-events.json public/data/
+          git add public/data/refresh.json public/data/link-health.json public/data/live-events.json
+          if git diff --cached --quiet; then
             echo "No data changes."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/refresh.json public/data/link-health.json public/data/live-events.json
           git commit -m "chore: refresh source data"
-          git push
+          git push origin "HEAD:$data_branch"
