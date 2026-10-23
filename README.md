@@ -33,7 +33,12 @@ Generated files:
 - `public/data/refresh.json`
 - `public/data/link-health.json`
 - `public/data/live-summary.json` — reports, counts, and pre-aggregated heat cells for the first view
+- `public/data/zones.json` — hotspot zones with a stable id, place name, and a short detection history
 - `public/data/thermal/<tile>.json` — sensor points for one 10° tile, loaded when the map is zoomed in
+
+`npm run build` also writes `public/feed.xml` from `zones.json`. The feed gains an item when a zone opens or closes. Zone history is carried forward from the previous `data` branch copy. A zone closes after 72 hours without detections and is dropped 14 days after it closes.
+
+Run `npm test` for the zone, tile, and fetch checks.
 
 Those files are not committed on `main`. The refresh workflow publishes them on `data`. `scripts/fetch-data.mjs`, which `npm run build` runs first, downloads the summary from that branch and then each tile it lists. A failed download exits non-zero, so Cloudflare Pages and GitHub Pages both keep the last good deployment. Pull requests should not add or modify `public/data`.
 

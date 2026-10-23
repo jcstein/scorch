@@ -31,6 +31,7 @@
     <meta name="twitter:image" content="https://scorch.jcstein.dev/og-image.png">
     <meta name="twitter:image:alt" content="Scorch: public sources for conflict damage, oil fires, and emissions.">
     <link rel="icon" href="./icons/app-icon.svg" type="image/svg+xml">
+    <link rel="alternate" type="application/rss+xml" title="Scorch hotspot zones" href="./feed.xml">
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
@@ -39,6 +40,7 @@
       <a class="top-bar-brand" href="#">Scorch</a>
       <div class="top-bar-links">
         <a href="#map-board">Map</a>
+        <a href="#zones-board">Zones</a>
         <a href="#live-board">Live</a>
         <a href="#source-grid">Sources</a>
       </div>
@@ -98,6 +100,16 @@
           <div id="priority-grid" class="priority-grid" aria-live="polite"></div>
         </section>
 
+        <section id="zones-board" class="zones-board" aria-labelledby="zones-heading">
+          <div class="section-heading">
+            <p class="eyebrow">Hotspots</p>
+            <h2 id="zones-heading">Emerging zones</h2>
+          </div>
+          <p id="zones-summary" class="results-summary">Loading hotspot zones…</p>
+          <ul id="zones-list" class="zones-list" aria-label="Emerging zones"></ul>
+          <p id="zones-announce" class="visually-hidden" aria-live="polite"></p>
+        </section>
+
         <section id="map-board" class="map-board">
           <div class="section-heading">
             <p class="eyebrow">Map View</p>
@@ -112,6 +124,7 @@
                   <span class="legend-chip legend-chip-hot">Priority zone</span>
                   <span class="legend-chip legend-chip-teal">Other zone</span>
                   <span class="legend-chip legend-chip-live">Unconfirmed heat</span>
+                  <span class="legend-chip legend-chip-zone">Emerging zone</span>
                 </div>
                 <p class="map-caption">The map opens on Iran and the Gulf. Zoom in to separate heat detections.</p>
               </div>
@@ -257,6 +270,7 @@
       <div class="footer-inner">
         <p class="footer-brand">Scorch</p>
         <p class="footer-note">Public sources only. Not a single source of truth.</p>
+        <a class="footer-link" href="./feed.xml">Zone feed</a>
       </div>
     </footer>
 

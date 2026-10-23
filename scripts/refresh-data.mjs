@@ -3,6 +3,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { decodeThermalPoint, packThermalEvents } from "../live-layer.js";
 import { LIVE_WINDOW_HOURS } from "../live-window.js";
+import { LINKAGE_KM, MIN_DETECTIONS, CLOSE_AFTER_HOURS, renderZoneFeed, updateZones } from "../zones.js";
+import { nameZone } from "./zone-names.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
@@ -12,6 +14,8 @@ const linkHealthPath = resolve(repoRoot, "public", "data", "link-health.json");
 const dataDir = resolve(repoRoot, "public", "data");
 const liveEventsPath = resolve(dataDir, "live-events.json");
 const summaryPath = resolve(dataDir, "live-summary.json");
+const zonesPath = resolve(dataDir, "zones.json");
+const feedPath = resolve(repoRoot, "public", "feed.xml");
 const thermalDir = resolve(dataDir, "thermal");
 
 const SOURCE_REGEX = /id:\s*"([^"]+)"[\s\S]*?link:\s*"([^"]+)"/g;
@@ -679,6 +683,58 @@ async function writeLivePayload(livePayload) {
   await rm(liveEventsPath, { force: true });
 }
 
+async function readPreviousZonesText() {
+  try {
+    const text = await readFile(zonesPath, "utf8");
+    const payload = JSON.parse(text);
+    if (!payload || !Array.isArray(payload.zones)) return null;
+    return text.endsWith("\n") ? text : `${text}\n`;
+  } catch (_) {
+    return null;
+  }
+}
+
+function emptyZoneDocument(now) {
+  return {
+    generatedAt: now.toISOString(),
+    linkageKm: LINKAGE_KM,
+    minDetections: MIN_DETECTIONS,
+    closeAfterHours: CLOSE_AFTER_HOURS,
+    zones: [],
+    notices: []
+  };
+}
+
+async function buildZonePayload(liveEvents, ingestSources, reusedPreviousEvents) {
+  const firmsOk = ingestSources.some((entry) => entry.id === INGEST_FEEDS.firms.id && entry.ok);
+  if (!firmsOk || reusedPreviousEvents) {
+    const previous = await readPreviousZonesText();
+    if (previous) {
+      console.log("Kept the previous zone file because this pass did not refresh FIRMS.");
+      return previous;
+    }
+    return `${JSON.stringify(emptyZoneDocument(generatedDate))}\n`;
+  }
+
+  let previous = null;
+  const previousText = await readPreviousZonesText();
+  if (previousText) previous = JSON.parse(previousText);
+  const detections = liveEvents
+    .filter((event) => event.type === "thermal")
+    .map((event) => ({ lat: event.lat, lon: event.lon, frp: event.frp }));
+  const result = updateZones({
+    previous,
+    detections,
+    now: generatedDate,
+    nameFor: nameZone
+  });
+  const active = result.document.zones.filter((zone) => zone.status !== "closed").length;
+  console.log(
+    `Zones: ${active} active, ${result.document.zones.length} tracked, ${result.opened.length} opened, ${result.closed.length} closed.`
+  );
+  return `${JSON.stringify(result.document)}\n`;
+}
+
 function computeLiveStats(events) {
   const byType = {};
   const byArea = {};
@@ -849,7 +905,7 @@ async function main() {
     liveEventsByType: liveStats.byType,
     liveSourcesHealthy: healthyLiveSources,
     liveSourcesTotal: ingestSources.length,
-    scriptVersion: 3
+    scriptVersion: 4
   };
 
   const healthPayload = {
@@ -866,10 +922,17 @@ async function main() {
     events: liveEvents
   };
 
+  const zonesRaw = await buildZonePayload(liveEvents, ingestSources, reusedPreviousEvents);
+  const zoneDocument = JSON.parse(zonesRaw);
+  refreshPayload.zonesActive = zoneDocument.zones.filter((zone) => zone.status !== "closed").length;
+  refreshPayload.zonesTotal = zoneDocument.zones.length;
+
   await mkdir(dataDir, { recursive: true });
   await writeFile(refreshPath, `${JSON.stringify(refreshPayload, null, 2)}\n`);
   await writeFile(linkHealthPath, `${JSON.stringify(healthPayload, null, 2)}\n`);
   await writeLivePayload(livePayload);
+  await writeFile(zonesPath, zonesRaw.endsWith("\n") ? zonesRaw : `${zonesRaw}\n`);
+  await writeFile(feedPath, renderZoneFeed(zoneDocument));
 }
 
 main().catch((error) => {

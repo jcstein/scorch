@@ -1,8 +1,9 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { renderZoneFeed } from "../zones.js";
 
-export const DATA_FILES = ["refresh.json", "link-health.json", "live-summary.json"];
+export const DATA_FILES = ["refresh.json", "link-health.json", "live-summary.json", "zones.json"];
 export const DATA_BRANCH = "data";
 const TILE_ID = /^-?\d+_-?\d+$/;
 
@@ -95,11 +96,22 @@ export async function ensureSourceData({
   return { fetched };
 }
 
+export async function writeZoneFeed({
+  zonesPath = resolve(repoRoot, "public", "data", "zones.json"),
+  feedPath = resolve(repoRoot, "public", "feed.xml")
+} = {}) {
+  const payload = JSON.parse(await readFile(zonesPath, "utf8"));
+  const xml = renderZoneFeed(payload);
+  await mkdir(dirname(feedPath), { recursive: true });
+  await writeFile(feedPath, xml.endsWith("\n") ? xml : `${xml}\n`);
+}
+
 const isCli = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 
 if (isCli) {
   try {
     const { fetched } = await ensureSourceData();
+    await writeZoneFeed();
     if (!fetched.length) {
       console.log("public/data is already present.");
     } else {

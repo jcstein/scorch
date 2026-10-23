@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
-import { ensureSourceData, rawDataUrl } from "./fetch-data.mjs";
+import { ensureSourceData, rawDataUrl, writeZoneFeed } from "./fetch-data.mjs";
 
 test("raw URL points at the public data branch", () => {
   assert.equal(
@@ -79,6 +79,7 @@ test("a summary download also fetches each thermal tile", async () => {
     "live-summary.json": `${JSON.stringify({
       thermal: { tiles: [{ id: "10_20", count: 1, maxFrp: 1 }] }
     })}\n`,
+    "zones.json": `${JSON.stringify({ zones: [], notices: [] })}\n`,
     "thermal/10_20.json": `${JSON.stringify({ id: "10_20", points: [[10, 20, 1, 0, 0]] })}\n`
   };
   try {
@@ -95,6 +96,38 @@ test("a summary download also fetches each thermal tile", async () => {
     const tile = JSON.parse(await readFile(resolve(dest, "thermal", "10_20.json"), "utf8"));
     assert.equal(tile.points.length, 1);
     await assert.rejects(readFile(resolve(dest, "live-events.json"), "utf8"));
+    assert.ok(result.fetched.includes("zones.json"));
+  } finally {
+    await rm(dest, { recursive: true, force: true });
+  }
+});
+
+test("the zone file becomes the RSS feed", async () => {
+  const dest = await mkdtemp(resolve(tmpdir(), "scorch-feed-"));
+  try {
+    const zonesPath = resolve(dest, "zones.json");
+    const feedPath = resolve(dest, "feed.xml");
+    await writeFile(
+      zonesPath,
+      `${JSON.stringify({
+        generatedAt: "2026-10-23T00:00:00.000Z",
+        notices: [
+          {
+            id: "open:z-1:t",
+            type: "open",
+            zoneId: "z-1",
+            name: "Gaza",
+            at: "2026-10-23T00:00:00.000Z",
+            count: 9,
+            peak_frp: 40
+          }
+        ]
+      })}\n`
+    );
+    await writeZoneFeed({ zonesPath, feedPath });
+    const xml = await readFile(feedPath, "utf8");
+    assert.match(xml, /<rss version="2.0">/);
+    assert.match(xml, /Zone opened: Gaza/);
   } finally {
     await rm(dest, { recursive: true, force: true });
   }
