@@ -1,5 +1,6 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { LIVE_WINDOW_HOURS } from "./live-window.js";
 
 const areas = [
   {
@@ -112,23 +113,26 @@ const sources = [
   },
   {
     id: "ceobs-iran-update",
-    title: "CEOBS: Iran War environmental risk overview (late March 2026)",
+    title: "CEOBS: Iran War environmental risk overview (27 March 2026)",
     region: "Iran / Gulf",
     groups: ["Iran / Gulf"],
     signals: ["Environmental Risk", "Oil Fires", "Water", "Military"],
     priority: true,
     freshness: "March 27, 2026",
-    freshnessRank: 5,
+    freshnessRank: 3,
     sourceDate: "March 27, 2026",
-    cadence: "Rapid conflict analysis",
+    cadence: "Snapshot analysis",
     access: "Open",
     description:
-      "A month into the Israeli-US war against Iran, CEOBS summarises current and emerging conflict trends and their potential implications for people and the environment.",
+      "CEOBS's late-March overview of how the Israeli-US war against Iran was driving conflict-linked pollution, industrial fires, water risk, and nuclear and fossil-fuel hazards.",
     why:
-      "This is the most comprehensive environmental-risk update covering the broader Iran theatre beyond the initial Tehran strikes, and it supersedes the earlier March reports.",
+      "It is still the fullest public CEOBS environmental-risk brief for the opening phase of the war. Later 2026 CEOBS writing introduces the WISEN database rather than a newer theatre-wide overview.",
     limits:
-      "It is a specialist assessment, not a live incident feed, and some claims depend on remote verification during an active war.",
+      "The page is dated 27 March 2026 and is not a live incident feed. Incident claims were remote assessments made during an active war.",
     link: "https://ceobs.org/iran-war-environmental-risk-overview-as-of-27th-march/",
+    extraLabel: "WISEN database",
+    extraLink:
+      "https://ceobs.org/introducing-wisen-the-wartime-incidents-to-environment-database/",
     primaryArea: "iran-gulf",
     mapAreas: ["iran-gulf"],
     point: [32.5, 53.7],
@@ -136,56 +140,56 @@ const sources = [
     locationLabel: "Iran conflict theatre"
   },
   {
-    id: "acled-60-days-iran",
-    title: "ACLED: 60 days of the Iran war — 6 conflicts you didn't see",
+    id: "acled-hormuz-oil",
+    title: "ACLED: Strait of Hormuz oil flows and shipping attacks",
     region: "Iran / Gulf",
     groups: ["Iran / Gulf"],
-    signals: ["Conflict Events", "Strike Pattern", "Civilian Harm", "Regional"],
+    signals: ["Conflict Events", "Oil", "Shipping", "Strike Pattern"],
     priority: true,
-    freshness: "April 29, 2026",
-    freshnessRank: 5,
-    sourceDate: "April 29, 2026",
-    cadence: "Public analysis with ongoing updates",
+    freshness: "October 2, 2026",
+    freshnessRank: 4,
+    sourceDate: "October 2, 2026",
+    cadence: "Expert comment",
     access: "Open",
     description:
-      "While global attention was fixed on Iran, violence, unrest, and instability continued to escalate elsewhere. ACLED documents six conflicts that gained traction as the Iran war unfolded.",
+      "ACLED's Middle East analyst on why recovering crude flows through the Strait of Hormuz do not mean the threat to tankers has eased.",
     why:
-      "Fresh analysis tying the Iran war's regional ripple effects to under-reported violence, published today.",
+      "Published 2 October 2026, it is the current public ACLED note on the Gulf energy corridor: September had the most successful Iranian attacks on commercial shipping since the March peak, including at least 16 tankers.",
     limits:
-      "It focuses on under-the-radar conflicts rather than direct Iran theatre mapping.",
-    link: "https://acleddata.com/expert-comment/60-days-iran-war-6-conflicts-you-didnt-see",
+      "It is a short analyst comment on shipping and oil flows, not an environmental-damage map or a downloadable event file.",
+    link: "https://acleddata.com/expert-comment/strait-hormuz-becoming-safer-oil-flows-recover",
     primaryArea: "iran-gulf",
     mapAreas: ["iran-gulf"],
-    point: [32.5, 53.7],
+    point: [26.57, 56.25],
     zoom: 6,
-    locationLabel: "Iran and regional effects"
+    locationLabel: "Strait of Hormuz"
   },
   {
-    id: "acled-iran-live",
-    title: "ACLED: Iran War Updates daily tracker",
+    id: "acled-me-daily-strikes",
+    title: "ACLED: Daily strike data across the Middle East",
     region: "Iran / Gulf",
     groups: ["Iran / Gulf"],
     signals: ["Conflict Events", "Strike Pattern", "Civilian Harm", "Daily"],
     priority: true,
-    freshness: "Ongoing daily",
+    freshness: "Updated daily",
     freshnessRank: 5,
-    sourceDate: "Updated daily since late February 2026",
+    sourceDate: "Rolling daily brief",
     cadence: "Daily updates",
-    access: "Open",
+    access: "Open page; event file needs an eligible account",
     description:
-      "ACLED's dedicated daily updates page tracking the conflict unfolding in Iran and the wider region, with interactive maps and event counts.",
+      "ACLED's public daily brief of strike events across the Middle East, including US and Israeli strikes on Iran and Iranian and Houthi attacks around the Gulf.",
     why:
-      "This is ACLED's actively maintained daily tracker for the Iran war, replacing the earlier one-off special issue.",
+      "This is the public page ACLED is updating with daily strike briefs for Iran and the wider region. When checked on 23 October 2026, the newest items were dated 21 October.",
     limits:
-      "ACLED is event data, not direct structural damage mapping, and the best granularity requires account access.",
-    link: "https://acleddata.com/iran-crisis-live",
+      "This is conflict-event reporting, not structural or environmental damage mapping. The downloadable daily event file is limited to eligible ACLED accounts.",
+    link: "https://acleddata.com/current-crises/daily-data-strikes-across-middle-east",
     extraLabel: "Access FAQ",
-    extraLink: "https://acleddata.com/faq/how-can-i-access-and-use-acled-data",
+    extraLink: "https://acleddata.com/myacled-faqs",
     primaryArea: "iran-gulf",
     mapAreas: ["iran-gulf"],
-    point: [32.5, 53.7],
-    zoom: 6,
-    locationLabel: "Iran conflict theatre"
+    point: [30.4, 52.2],
+    zoom: 5,
+    locationLabel: "Middle East strike theatre"
   },
   {
     id: "world-bank-flaring",
@@ -369,6 +373,8 @@ const sources = [
 const preferredSignalOrder = [
   "Thermal",
   "Oil Fires",
+  "Oil",
+  "Shipping",
   "Methane",
   "Gas Flaring",
   "Satellite",
@@ -418,7 +424,7 @@ const runtime = {
   liveLayer: null,
   liveEvents: [],
   liveStats: null,
-  liveWindowHours: 24 * 30,
+  liveWindowHours: LIVE_WINDOW_HOURS,
   hasInitialFit: false,
   installPrompt: null,
   pendingLivePopupId: null
@@ -892,14 +898,15 @@ function renderLiveEvents(visibleLiveEvents) {
   const totalLoaded = getLiveIngestTotal();
   const mappableTotal = runtime.liveEvents.length;
   const visibleCount = visibleLiveEvents.length;
-  const windowDays = Math.round((runtime.liveWindowHours || 24 * 30) / 24);
+  const windowDays = Math.round((runtime.liveWindowHours || LIVE_WINDOW_HOURS) / 24);
+  const eventWord = totalLoaded === 1 ? "event" : "events";
   const ingestNote =
     totalLoaded === mappableTotal
-      ? `${totalLoaded} ingested over ${windowDays} days`
-      : `${totalLoaded} ingested over ${windowDays} days (${mappableTotal} mappable on map)`;
-  els.liveSummary.textContent = `${visibleCount} live event${
-    visibleCount === 1 ? "" : "s"
-  } match your filters (${ingestNote}).`;
+      ? `${totalLoaded} ${eventWord} in the latest refresh, RSS kept for ${windowDays} days`
+      : `${totalLoaded} ${eventWord} in the latest refresh, RSS kept for ${windowDays} days (${mappableTotal} mappable on the map)`;
+  const visibleWord = visibleCount === 1 ? "live event" : "live events";
+  const matchWord = visibleCount === 1 ? "matches" : "match";
+  els.liveSummary.textContent = `${visibleCount} ${visibleWord} ${matchWord} your filters (${ingestNote}).`;
 
   els.liveEventsList.innerHTML = "";
 
@@ -1488,7 +1495,7 @@ async function loadLiveEvents() {
       );
 
     runtime.liveStats = payload.stats || null;
-    runtime.liveWindowHours = Number(payload.windowHours) || 24 * 30;
+    runtime.liveWindowHours = Number(payload.windowHours) || LIVE_WINDOW_HOURS;
   } catch (_) {
   }
 }
