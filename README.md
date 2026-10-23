@@ -53,3 +53,9 @@ Or regenerate it with `mkdir -p public/data && node scripts/refresh-data.mjs`.
 Automation lives in `.github/workflows/refresh-data.yml` with cron:
 
 `0 */6 * * *`
+
+That workflow also files zone alerts and redeploys Cloudflare Pages. Thresholds are `ZONE_ALERT_OPEN_MIN` (default 15) and `ZONE_ALERT_GROWTH_MIN` (default 50) at the top of the workflow file.
+
+The first alert run records zones that already exist and does not open issues for them. It opens a `zone-alert` issue when a zone newly opens at or above the open threshold, or when a growing zone crosses the growth threshold for the first time. The same zone and reason are not filed twice. When a zone closes, the workflow comments on its open issue and closes it. Remembered ids live on the `data` branch in `public/data/zone-alerts.json`, separate from the small `zones.json` the map downloads.
+
+After a data push, and on a manual run, the workflow deploys the Cloudflare Pages project `scorch` from `main` and fails the job if that deployment fails. It uses the `CLOUDFLARE_API_TOKEN` secret (Pages edit). `CLOUDFLARE_ACCOUNT_ID` can be a repository variable or secret; otherwise the deploy script uses its built-in account id. A missing `CLOUDFLARE_API_TOKEN` skips the deploy with a warning.
