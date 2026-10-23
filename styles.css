@@ -1158,6 +1158,90 @@ input {
   font-size: 0.88rem;
 }
 
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2000;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--bg-deep);
+  color: #fff6ee;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.map-status {
+  max-width: 68ch;
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.source-health {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.source-health.is-ok {
+  color: var(--teal-strong);
+}
+
+.source-health.is-fail {
+  color: var(--accent-strong);
+}
+
+.source-health.is-inconclusive,
+.source-health.is-unknown {
+  color: var(--gold);
+}
+
+.live-event-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.report-marker {
+  background: transparent;
+  border: 0;
+}
+
+.report-marker-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 2px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #1b6e65;
+  box-shadow: 0 0 0 1px rgba(35, 22, 18, 0.28);
+}
+
+.report-marker-dot.is-conflict {
+  background: #8f1f34;
+}
+
+.leaflet-marker-icon:focus-visible,
+.filter-pill:focus-visible,
+.map-list-button:focus-visible,
+.leaflet-popup:focus-visible,
+.leaflet-popup a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.map-popup p {
+  margin: 6px 0;
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 1020px) {

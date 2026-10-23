@@ -1,5 +1,6 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { presentEvent, selectThermalForView } from "./live-layer.js";
 import { LIVE_WINDOW_HOURS } from "./live-window.js";
 
 const areas = [
@@ -372,6 +373,7 @@ const sources = [
 
 const preferredSignalOrder = [
   "Thermal",
+  "Unconfirmed",
   "Oil Fires",
   "Oil",
   "Shipping",
@@ -422,11 +424,14 @@ const runtime = {
   areaLayers: new Map(),
   sourceLayer: null,
   liveLayer: null,
+  reportLayer: null,
   liveEvents: [],
   liveStats: null,
   liveWindowHours: LIVE_WINDOW_HOURS,
+  linkHealth: new Map(),
+  generatedAt: null,
+  liveStatus: "loading",
   hasInitialFit: false,
-  installPrompt: null,
   pendingLivePopupId: null
 };
 
@@ -444,8 +449,8 @@ const els = {
   realtimeCount: document.querySelector("#realtime-count"),
   openCount: document.querySelector("#open-count"),
   lastRefreshValue: document.querySelector("#last-refresh-value"),
-  installButton: document.querySelector("#install-button"),
   mapRoot: document.querySelector("#map"),
+  mapStatus: document.querySelector("#map-status"),
   mapPanelTitle: document.querySelector("#map-panel-title"),
   mapPanelCopy: document.querySelector("#map-panel-copy"),
   mapPanelMeta: document.querySelector("#map-panel-meta"),
@@ -470,19 +475,93 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function describeLinkHealth(result) {
+  if (!result) {
+    return { kind: "unknown", text: "Link not checked yet" };
+  }
+  if (result.ok) {
+    return { kind: "ok", text: "Link checked" };
+  }
+  if (result.inconclusive || result.status === 403) {
+    return { kind: "inconclusive", text: "Link check blocked" };
+  }
+  return { kind: "fail", text: "Link check failed" };
+}
+
+function currentMapBounds() {
+  if (!runtime.map) return null;
+  const bounds = runtime.map.getBounds();
+  return {
+    south: bounds.getSouth(),
+    west: bounds.getWest(),
+    north: bounds.getNorth(),
+    east: bounds.getEast()
+  };
+}
+
+function bindAccessiblePopup(marker, html) {
+  marker.bindPopup(html, { autoPan: true, maxWidth: 280 });
+  marker.on("popupopen", (event) => {
+    const popup = event.popup.getElement();
+    if (!popup) return;
+    const label = popup.querySelector("strong")?.textContent || "Map detail";
+    popup.setAttribute("role", "dialog");
+    popup.setAttribute("aria-label", label);
+    const focusTarget = popup.querySelector("a, button");
+    if (focusTarget) {
+      focusTarget.focus();
+      return;
+    }
+    popup.tabIndex = -1;
+    popup.focus();
+  });
+  marker.on("popupclose", () => {
+    const host = marker.getElement?.();
+    if (host && document.contains(host)) host.focus();
+  });
+}
+
+function eventPopupHtml(event) {
+  const view = presentEvent(event);
+  const href = event.link || (event.type === "thermal" ? "https://firms.modaps.eosdis.nasa.gov/map/" : "");
+  return `<div class="map-popup"><strong>${escapeHtml(view.title)}</strong><p>${escapeHtml(view.locationNote)}</p><p>${escapeHtml(event.region || "Global")} · ${escapeHtml(formatEventTime(event.eventTime))}</p><p>${escapeHtml(view.summary || "")}</p>${
+    href
+      ? `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">Open source</a>`
+      : ""
+  }</div>`;
+}
+
+function labelMarker(marker, label) {
+  const element = marker.getElement?.();
+  if (!element) return;
+  element.setAttribute("role", "button");
+  element.setAttribute("aria-label", label);
+}
+
 function buildPills(container, values, activeValue, onClick) {
+  const previous = document.activeElement;
+  const restoreLabel =
+    previous && container.contains(previous) ? previous.textContent : null;
   container.innerHTML = "";
   values.forEach((value) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "filter-pill";
     button.textContent = value;
-    if (value === activeValue) {
+    const pressed = value === activeValue;
+    button.setAttribute("aria-pressed", pressed ? "true" : "false");
+    if (pressed) {
       button.classList.add("is-active");
     }
     button.addEventListener("click", () => onClick(value));
     container.appendChild(button);
   });
+  if (restoreLabel) {
+    const match = [...container.querySelectorAll("button")].find(
+      (button) => button.textContent === restoreLabel
+    );
+    match?.focus();
+  }
 }
 
 function sortSources(list) {
@@ -688,11 +767,9 @@ function focusSource(sourceId, options = {}) {
 
 function resetView() {
   state.activeSourceId = null;
-  state.activeAreaId = getDefaultAreaId(
-    computeAreaStats(getVisibleSources(), getVisibleLiveEvents())
-  );
+  state.activeAreaId = "iran-gulf";
   renderAll();
-  fitVisibleAreas();
+  fitArea("iran-gulf");
 }
 
 function buildMetaChip(text) {
@@ -866,12 +943,8 @@ function formatEventTime(value) {
 }
 
 function liveTypeLabel(type) {
-  if (type === "thermal") {
-    return "Thermal";
-  }
-  if (type === "conflict") {
-    return "Conflict";
-  }
+  if (type === "thermal") return "Heat";
+  if (type === "conflict") return "Conflict";
   return "Analysis";
 }
 
@@ -882,12 +955,16 @@ function showLiveEventOnMap(eventId) {
   }
 
   runtime.pendingLivePopupId = eventId;
+  runtime.holdPopup = true;
   state.activeSourceId = null;
-  state.activeAreaId = event.areaId || "global-hub";
+  state.activeAreaId = event.areaId || "iran-gulf";
+  const zoom = Math.max(6, runtime.map.getZoom() || 6);
+  runtime.map.setView([event.lat, event.lon], zoom, { animate: false });
   renderAll();
-
-  runtime.map.setView([event.lat, event.lon], event.zoom || 6, { animate: true });
   scrollMapIntoView();
+  setTimeout(() => {
+    runtime.holdPopup = false;
+  }, 120);
 }
 
 function renderLiveEvents(visibleLiveEvents) {
@@ -895,26 +972,39 @@ function renderLiveEvents(visibleLiveEvents) {
     return;
   }
 
-  const totalLoaded = getLiveIngestTotal();
-  const mappableTotal = runtime.liveEvents.length;
-  const visibleCount = visibleLiveEvents.length;
+  const reports = visibleLiveEvents.filter((event) => event.type !== "thermal");
+  const heat = visibleLiveEvents.filter((event) => event.type === "thermal");
+  const ordered = [...reports, ...heat];
+  const visibleCount = ordered.length;
   const windowDays = Math.round((runtime.liveWindowHours || LIVE_WINDOW_HOURS) / 24);
-  const eventWord = totalLoaded === 1 ? "event" : "events";
-  const ingestNote =
-    totalLoaded === mappableTotal
-      ? `${totalLoaded} ${eventWord} in the latest refresh, RSS kept for ${windowDays} days`
-      : `${totalLoaded} ${eventWord} in the latest refresh, RSS kept for ${windowDays} days (${mappableTotal} mappable on the map)`;
-  const visibleWord = visibleCount === 1 ? "live event" : "live events";
-  const matchWord = visibleCount === 1 ? "matches" : "match";
-  els.liveSummary.textContent = `${visibleCount} ${visibleWord} ${matchWord} your filters (${ingestNote}).`;
+  if (runtime.liveStatus === "loading") {
+    els.liveSummary.textContent = "Loading live reports and satellite heat…";
+  } else if (runtime.liveStatus === "error") {
+    els.liveSummary.textContent =
+      "Live reports could not be loaded. The source cards below still work.";
+  } else if (!getLiveIngestTotal()) {
+    els.liveSummary.textContent = "No live reports have been ingested yet.";
+  } else {
+    const reportLabel = reports.length === 1 ? "report" : "reports";
+    const heatLabel = heat.length === 1 ? "heat detection" : "heat detections";
+    els.liveSummary.textContent = `${reports.length} ${reportLabel} and ${heat.length} unconfirmed ${heatLabel} match these filters. Reports are kept for ${windowDays} days. Heat is the latest FIRMS 24-hour file, and the map draws only the current view.`;
+  }
 
   els.liveEventsList.innerHTML = "";
 
-  if (!totalLoaded) {
+  if (runtime.liveStatus === "loading") {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "Loading the latest public reports…";
+    els.liveEventsList.appendChild(empty);
+    return;
+  }
+
+  if (runtime.liveStatus === "error" || !getLiveIngestTotal()) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
     empty.textContent =
-      "No live ingest payload is available yet. The next refresh cycle will populate this feed.";
+      "Nothing is in the live file yet. Source cards are still available below.";
     els.liveEventsList.appendChild(empty);
     return;
   }
@@ -922,16 +1012,16 @@ function renderLiveEvents(visibleLiveEvents) {
   if (!visibleCount) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent =
-      "No live events match the current region, signal, or search filters.";
+    empty.textContent = "No live reports or heat detections match these filters.";
     els.liveEventsList.appendChild(empty);
     return;
   }
 
-  const page = visibleLiveEvents.slice(0, state.liveShown);
+  const page = ordered.slice(0, state.liveShown);
   const remaining = visibleCount - page.length;
 
   page.forEach((event) => {
+    const view = presentEvent(event);
     const card = document.createElement("article");
     card.className = "live-event-card";
 
@@ -950,17 +1040,19 @@ function renderLiveEvents(visibleLiveEvents) {
 
     const title = document.createElement("h3");
     title.className = "live-event-title";
-    title.textContent = event.title || "Untitled event";
+    title.textContent = view.title;
 
     const summary = document.createElement("p");
     summary.className = "live-event-summary";
-    summary.textContent = event.summary || "No summary provided.";
+    summary.textContent = view.summary || "No summary provided.";
 
     const source = document.createElement("p");
     source.className = "live-event-source";
-    source.textContent = `${event.region || "Global"} - ${
-      event.sourceName || "Source"
-    }`;
+    source.textContent = `${event.region || "Global"} · ${view.sourceName}`;
+
+    const note = document.createElement("p");
+    note.className = "live-event-note";
+    note.textContent = view.locationNote;
 
     const actions = document.createElement("div");
     actions.className = "live-event-actions";
@@ -974,17 +1066,17 @@ function renderLiveEvents(visibleLiveEvents) {
     });
     actions.appendChild(mapButton);
 
-    if (event.link) {
+    if (event.link || event.type === "thermal") {
       const link = document.createElement("a");
       link.className = "button button-primary";
       link.target = "_blank";
       link.rel = "noreferrer";
-      link.href = event.link;
+      link.href = event.link || "https://firms.modaps.eosdis.nasa.gov/map/";
       link.textContent = "Open Event";
       actions.appendChild(link);
     }
 
-    card.append(topline, title, summary, source, actions);
+    card.append(topline, title, summary, source, note, actions);
     els.liveEventsList.appendChild(card);
   });
 
@@ -1022,6 +1114,10 @@ function renderCard(source, priority = false) {
   fragment.querySelector(".meta-access").textContent = source.access;
   fragment.querySelector(".source-why").textContent = source.why;
   fragment.querySelector(".source-limits").textContent = source.limits;
+  const health = fragment.querySelector(".source-health");
+  const healthView = describeLinkHealth(runtime.linkHealth.get(source.id));
+  health.textContent = healthView.text;
+  health.className = `source-health is-${healthView.kind}`;
 
   const tagRow = fragment.querySelector(".tag-row");
   source.signals.forEach((signal) => {
@@ -1145,69 +1241,109 @@ function getAreaStyle(stat, active) {
   };
 }
 
-function getLiveMarkerStyle(event) {
-  const severity = event.severity || "low";
-  if (event.type === "thermal") {
-    return {
-      color: "#fff7f3",
-      weight: 1.4,
-      fillColor: severity === "high" ? "#b84b1f" : "#d2753e",
-      fillOpacity: 0.86,
-      radius: severity === "high" ? 6 : 5
-    };
-  }
-
-  if (event.type === "conflict") {
-    return {
-      color: "#fff8fb",
-      weight: 1.4,
-      fillColor: severity === "high" ? "#8f1f34" : "#aa3b52",
-      fillOpacity: 0.82,
-      radius: severity === "high" ? 6 : 5
-    };
-  }
-
-  return {
-    color: "#eefbf8",
-    weight: 1.3,
-    fillColor: "#1b6e65",
-    fillOpacity: 0.8,
-    radius: 5
-  };
-}
-
 function renderLiveLayer(visibleLiveEvents) {
-  if (!runtime.map) {
-    return;
-  }
+  if (!runtime.map) return;
 
   if (!runtime.liveLayer) {
     runtime.liveLayer = L.layerGroup().addTo(runtime.map);
   }
-
+  if (!runtime.reportLayer) {
+    runtime.reportLayer = L.layerGroup().addTo(runtime.map);
+  }
   runtime.liveLayer.clearLayers();
+  runtime.reportLayer.clearLayers();
 
-  visibleLiveEvents.forEach((event) => {
-    const marker = L.circleMarker([event.lat, event.lon], getLiveMarkerStyle(event));
-    const popup = `
-      <strong>${escapeHtml(event.title || "Live event")}</strong><br>
-      ${escapeHtml(event.region || "Global")}<br>
-      ${escapeHtml(formatEventTime(event.eventTime))}<br>
-      <small>${escapeHtml(event.sourceName || "Source")}</small>${
-        event.link
-          ? `<br><a href="${escapeHtml(event.link)}" target="_blank" rel="noreferrer">Open event</a>`
-          : ""
-      }
-    `;
+  const canvas = runtime.thermalCanvas || L.canvas({ padding: 0.2 });
+  runtime.thermalCanvas = canvas;
+  const reports = visibleLiveEvents.filter((event) => event.type !== "thermal");
+  const selection = selectThermalForView(visibleLiveEvents, {
+    zoom: runtime.map.getZoom(),
+    bounds: currentMapBounds(),
+    pinId: runtime.pendingLivePopupId
+  });
 
-    marker.bindPopup(popup);
-    marker.addTo(runtime.liveLayer);
-
+  reports.forEach((event) => {
+    const view = presentEvent(event);
+    const marker = L.marker([event.lat, event.lon], {
+      keyboard: true,
+      title: `${view.title}. ${view.locationNote}`,
+      icon: L.divIcon({
+        className: "report-marker",
+        html: `<span class="report-marker-dot is-${event.type || "analysis"}"></span>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      })
+    });
+    bindAccessiblePopup(marker, eventPopupHtml(event));
+    marker.on("add", () => labelMarker(marker, `${view.title}. ${view.locationNote}`));
+    marker.addTo(runtime.reportLayer);
     if (runtime.pendingLivePopupId === event.id) {
       marker.openPopup();
       runtime.pendingLivePopupId = null;
     }
   });
+
+  if (selection.mode === "clusters") {
+    selection.shown.forEach((cluster) => {
+      const radius = Math.max(8, Math.min(22, 6 + Math.sqrt(cluster.count)));
+      const marker = L.circleMarker([cluster.lat, cluster.lon], {
+        renderer: canvas,
+        radius,
+        color: "#fff7f3",
+        weight: 1.2,
+        fillColor: "#b84b1f",
+        fillOpacity: 0.72
+      });
+      const label = `${cluster.count} unconfirmed heat detections in this area. Zoom in for individual sensor points.`;
+      marker.bindTooltip(label, { direction: "top" });
+      marker.on("click", () => {
+        runtime.map.setView([cluster.lat, cluster.lon], Math.min((runtime.map.getZoom() || 2) + 2, 8));
+      });
+      marker.addTo(runtime.liveLayer);
+    });
+  } else {
+    selection.shown.forEach((event) => {
+      const marker = L.circleMarker([event.lat, event.lon], {
+        renderer: canvas,
+        radius: event.severity === "high" ? 6 : 4.5,
+        color: "#fff7f3",
+        weight: 1,
+        fillColor: event.severity === "high" ? "#8d3210" : "#d2753e",
+        fillOpacity: 0.88
+      });
+      bindAccessiblePopup(marker, eventPopupHtml(event));
+      marker.addTo(runtime.liveLayer);
+      if (runtime.pendingLivePopupId === event.id) {
+        marker.openPopup();
+        runtime.pendingLivePopupId = null;
+      }
+    });
+  }
+
+  if (els.mapRoot) {
+    els.mapRoot.dataset.thermalMode = selection.mode;
+    els.mapRoot.dataset.thermalShown = String(selection.shown.length);
+    els.mapRoot.dataset.thermalInView = String(selection.totalInView);
+  }
+  updateMapStatus(selection, reports.length);
+}
+
+function updateMapStatus(selection, reportCount) {
+  if (!els.mapStatus) return;
+  if (runtime.liveStatus === "loading") {
+    els.mapStatus.textContent = "Loading satellite heat and recent reports…";
+    return;
+  }
+  if (runtime.liveStatus === "error") {
+    els.mapStatus.textContent = "The live file did not load. Zone markers still show the source catalogue.";
+    return;
+  }
+  const refreshed = runtime.generatedAt ? formatEventTime(runtime.generatedAt) : "the latest refresh";
+  const heatSentence =
+    selection.mode === "clusters"
+      ? `${selection.totalInView.toLocaleString()} unconfirmed heat detections are in view, grouped into ${selection.shown.length.toLocaleString()} cells${selection.capped ? " (busiest cells only)" : ""}. Zoom in to separate them.`
+      : `Showing ${selection.shown.length.toLocaleString()} of ${selection.totalInView.toLocaleString()} unconfirmed heat points in view${selection.capped ? ", strongest first" : ""}.`;
+  els.mapStatus.textContent = `${heatSentence} ${reportCount.toLocaleString()} report${reportCount === 1 ? "" : "s"} use approximate locations. Satellite file from ${refreshed}.`;
 }
 
 function setupMap() {
@@ -1251,12 +1387,21 @@ function setupMap() {
     layer.marker.on("click", () => {
       focusArea(area.id, { fit: true, scroll: false });
     });
+    layer.marker.on("add", () => labelMarker(layer.marker, `${area.name}. Activate to focus this zone.`));
     layer.marker.bindTooltip(area.name, {
       direction: "top",
       offset: [0, -24]
     });
 
     runtime.areaLayers.set(area.id, layer);
+  });
+
+  runtime.map.on("moveend", () => {
+    if (runtime.holdPopup) return;
+    clearTimeout(runtime.mapMoveTimer);
+    runtime.mapMoveTimer = setTimeout(() => {
+      renderLiveLayer(getVisibleLiveEvents());
+    }, 60);
   });
 }
 
@@ -1275,6 +1420,10 @@ function updateMap(visibleSources, areaStats, visibleLiveEvents) {
       if (!runtime.map.hasLayer(layer.marker)) {
         layer.marker.addTo(runtime.map);
       }
+      labelMarker(
+        layer.marker,
+        `${area.name}. ${stat.count} monitored items. Activate to focus this zone.`
+      );
 
       if (layer.bounds) {
         layer.bounds.setStyle(getAreaStyle(stat, active));
@@ -1307,13 +1456,11 @@ function updateMap(visibleSources, areaStats, visibleLiveEvents) {
       fillColor: "#231612",
       fillOpacity: 0.96
     });
-
-    runtime.sourceLayer
-      .bindPopup(
-        `<strong>${activeSource.title}</strong><br>${activeSource.locationLabel}<br>${activeSource.freshness}`
-      )
-      .addTo(runtime.map)
-      .openPopup();
+    bindAccessiblePopup(
+      runtime.sourceLayer,
+      `<strong>${escapeHtml(activeSource.title)}</strong><p>${escapeHtml(activeSource.locationLabel)}</p><p>${escapeHtml(activeSource.freshness)}</p>`
+    );
+    runtime.sourceLayer.addTo(runtime.map);
   }
 
   renderLiveLayer(visibleLiveEvents);
@@ -1346,7 +1493,7 @@ function fitVisibleAreas(
   }
 }
 
-function fitArea(areaId) {
+function fitArea(areaId, options = {}) {
   if (!runtime.map || !areaId) {
     return;
   }
@@ -1356,15 +1503,18 @@ function fitArea(areaId) {
     return;
   }
 
+  const animate = options.animate !== false;
+
   if (area.bounds) {
     runtime.map.fitBounds(area.bounds, {
       padding: [28, 28],
-      maxZoom: area.id === "gaza" ? 10 : 6
+      maxZoom: area.id === "gaza" ? 10 : 6,
+      animate
     });
     return;
   }
 
-  runtime.map.setView(area.center, area.zoom || 2, { animate: true });
+  runtime.map.setView(area.center, area.zoom || 2, { animate });
 }
 
 function fitSource(sourceId) {
@@ -1403,35 +1553,23 @@ function setupViewToggle() {
     return;
   }
 
+  els.viewGridBtn.setAttribute("aria-pressed", "true");
+  els.viewListBtn.setAttribute("aria-pressed", "false");
+
   els.viewGridBtn.addEventListener("click", () => {
     els.sourceGrid.classList.remove("is-list");
     els.viewGridBtn.classList.add("is-active");
+    els.viewGridBtn.setAttribute("aria-pressed", "true");
     els.viewListBtn.classList.remove("is-active");
+    els.viewListBtn.setAttribute("aria-pressed", "false");
   });
 
   els.viewListBtn.addEventListener("click", () => {
     els.sourceGrid.classList.add("is-list");
     els.viewListBtn.classList.add("is-active");
+    els.viewListBtn.setAttribute("aria-pressed", "true");
     els.viewGridBtn.classList.remove("is-active");
-  });
-}
-
-function setupInstall() {
-  window.addEventListener("beforeinstallprompt", (event) => {
-    event.preventDefault();
-    runtime.installPrompt = event;
-    els.installButton.hidden = false;
-  });
-
-  els.installButton.addEventListener("click", async () => {
-    if (!runtime.installPrompt) {
-      return;
-    }
-
-    runtime.installPrompt.prompt();
-    await runtime.installPrompt.userChoice;
-    runtime.installPrompt = null;
-    els.installButton.hidden = true;
+    els.viewGridBtn.setAttribute("aria-pressed", "false");
   });
 }
 
@@ -1461,6 +1599,7 @@ async function loadRefreshTimestamp() {
       return;
     }
 
+    runtime.generatedAt = payload.generatedAt;
     els.lastRefreshValue.textContent = date.toLocaleString(undefined, {
       dateStyle: "medium",
       timeStyle: "short"
@@ -1470,33 +1609,64 @@ async function loadRefreshTimestamp() {
   }
 }
 
+async function loadLinkHealth() {
+  try {
+    const response = await fetch("./data/link-health.json", { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    const results = Array.isArray(payload.results) ? payload.results : [];
+    runtime.linkHealth = new Map(results.map((result) => [result.id, result]));
+  } catch (_) {
+  }
+}
+
+function normalizeLiveEvent(event) {
+  const type = event.type || "analysis";
+  const thermal = type === "thermal";
+  return {
+    ...event,
+    type,
+    lat: Number(event.lat),
+    lon: Number(event.lon),
+    groups: Array.isArray(event.groups) ? event.groups : [event.region || "Global"],
+    signals: thermal
+      ? ["Thermal", "Unconfirmed"]
+      : Array.isArray(event.signals)
+        ? event.signals
+        : [],
+    locationPrecision: event.locationPrecision || (thermal ? "sensor" : "approximate"),
+    frp: event.frp == null ? null : Number(event.frp)
+  };
+}
+
 async function loadLiveEvents() {
   try {
     const response = await fetch("./data/live-events.json", { cache: "no-store" });
     if (!response.ok) {
+      runtime.liveStatus = "error";
       return;
     }
 
     const payload = await response.json();
     if (!payload || !Array.isArray(payload.events)) {
+      runtime.liveStatus = "error";
       return;
     }
 
     runtime.liveEvents = payload.events
-      .map((event) => ({
-        ...event,
-        lat: Number(event.lat),
-        lon: Number(event.lon),
-        groups: Array.isArray(event.groups) ? event.groups : [event.region || "Global"],
-        signals: Array.isArray(event.signals) ? event.signals : []
-      }))
+      .map(normalizeLiveEvent)
       .filter(
         (event) => Number.isFinite(event.lat) && Number.isFinite(event.lon) && event.eventTime
       );
 
     runtime.liveStats = payload.stats || null;
     runtime.liveWindowHours = Number(payload.windowHours) || LIVE_WINDOW_HOURS;
+    if (!runtime.generatedAt && payload.generatedAt) {
+      runtime.generatedAt = payload.generatedAt;
+    }
+    runtime.liveStatus = "ready";
   } catch (_) {
+    runtime.liveStatus = "error";
   }
 }
 
@@ -1525,15 +1695,24 @@ function setupDarkMode() {
   }
 
   const saved = localStorage.getItem("scorch-theme");
-  if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  if (saved === "dark" || (!saved && prefersDark)) {
     document.documentElement.setAttribute("data-theme", "dark");
   }
+
+  const syncThemeToggle = () => {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    toggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+    toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+  };
+  syncThemeToggle();
 
   toggle.addEventListener("click", () => {
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     const next = isDark ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("scorch-theme", next);
+    syncThemeToggle();
   });
 }
 
@@ -1575,12 +1754,13 @@ function renderAll() {
   renderSources(visibleSources);
   renderLiveEvents(visibleLiveEvents);
   renderMapPanel(visibleSources, areaStats);
-  updateMap(visibleSources, areaStats, visibleLiveEvents);
 
   if (!runtime.hasInitialFit && runtime.map && visibleSources.length) {
-    fitVisibleAreas(areaStats);
+    fitArea(state.activeAreaId || "iran-gulf", { animate: false });
     runtime.hasInitialFit = true;
   }
+
+  updateMap(visibleSources, areaStats, visibleLiveEvents);
 }
 
 async function init() {
@@ -1590,10 +1770,9 @@ async function init() {
   setupSearch();
   setupMapControls();
   setupViewToggle();
-  setupInstall();
   clearLegacyServiceWorkers();
   renderAll();
-  await Promise.all([loadRefreshTimestamp(), loadLiveEvents()]);
+  await Promise.all([loadRefreshTimestamp(), loadLiveEvents(), loadLinkHealth()]);
   renderAll();
 }
 
