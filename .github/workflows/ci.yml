@@ -36,6 +36,6 @@ jobs:
           changes="$(git diff --name-status "origin/${{ github.base_ref }}" -- public/data || true)"
           printf '%s\n' "$changes"
           if printf '%s\n' "$changes" | grep -E '^[AM]'; then
-            echo "Do not add or modify public/data. The refresh workflow publishes those files on cursor/jcs/source-data-595d."
+            echo "Do not add or modify public/data. The refresh workflow publishes those files on data."
             exit 1
           fi

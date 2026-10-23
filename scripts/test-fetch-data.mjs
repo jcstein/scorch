@@ -7,8 +7,8 @@ import { ensureSourceData, rawDataUrl } from "./fetch-data.mjs";
 
 test("raw URL points at the public data branch", () => {
   assert.equal(
-    rawDataUrl("live-events.json"),
-    "https://raw.githubusercontent.com/jcstein/scorch/cursor/jcs/source-data-595d/public/data/live-events.json"
+    rawDataUrl("live-summary.json"),
+    "https://raw.githubusercontent.com/jcstein/scorch/data/public/data/live-summary.json"
   );
 });
 
@@ -66,6 +66,56 @@ test("a successful fetch writes JSON", async () => {
     assert.deepEqual(result, { fetched: ["refresh.json"] });
     const written = JSON.parse(await readFile(resolve(dest, "refresh.json"), "utf8"));
     assert.equal(written.generatedAt, "2026-10-23T00:00:00.000Z");
+  } finally {
+    await rm(dest, { recursive: true, force: true });
+  }
+});
+
+test("a summary download also fetches each thermal tile", async () => {
+  const dest = await mkdtemp(resolve(tmpdir(), "scorch-data-"));
+  const files = {
+    "refresh.json": '{"ok":true}\n',
+    "link-health.json": '{"results":[]}\n',
+    "live-summary.json": `${JSON.stringify({
+      thermal: { tiles: [{ id: "10_20", count: 1, maxFrp: 1 }] }
+    })}\n`,
+    "thermal/10_20.json": `${JSON.stringify({ id: "10_20", points: [[10, 20, 1, 0, 0]] })}\n`
+  };
+  try {
+    const result = await ensureSourceData({
+      dest,
+      fetchImpl: async (url) => {
+        const name = url.split("/public/data/")[1];
+        const body = files[name];
+        if (!body) return { ok: false, status: 404, statusText: "Not Found", text: async () => "" };
+        return { ok: true, status: 200, statusText: "OK", text: async () => body };
+      }
+    });
+    assert.ok(result.fetched.includes("thermal/10_20.json"));
+    const tile = JSON.parse(await readFile(resolve(dest, "thermal", "10_20.json"), "utf8"));
+    assert.equal(tile.points.length, 1);
+    await assert.rejects(readFile(resolve(dest, "live-events.json"), "utf8"));
+  } finally {
+    await rm(dest, { recursive: true, force: true });
+  }
+});
+
+test("a missing thermal tile fails the build", async () => {
+  const dest = await mkdtemp(resolve(tmpdir(), "scorch-data-"));
+  try {
+    await writeFile(
+      resolve(dest, "live-summary.json"),
+      `${JSON.stringify({ thermal: { tiles: [{ id: "1_2" }] } })}\n`
+    );
+    await assert.rejects(
+      () =>
+        ensureSourceData({
+          dest,
+          files: ["live-summary.json"],
+          fetchImpl: async () => ({ ok: false, status: 404, statusText: "Not Found" })
+        }),
+      /404/
+    );
   } finally {
     await rm(dest, { recursive: true, force: true });
   }
