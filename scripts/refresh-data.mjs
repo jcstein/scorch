@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LIVE_WINDOW_HOURS } from "../live-window.js";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
@@ -13,7 +14,6 @@ const SOURCE_REGEX = /id:\s*"([^"]+)"[\s\S]*?link:\s*"([^"]+)"/g;
 const USER_AGENT = "scorch-refresh/2.0 (+https://github.com/jcstein/damage)";
 const generatedAt = new Date().toISOString();
 const generatedDate = new Date(generatedAt);
-const LIVE_WINDOW_HOURS = 24 * 30;
 
 const INGEST_FEEDS = {
   firms: {
