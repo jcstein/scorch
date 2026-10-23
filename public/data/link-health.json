@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T20:50:03.739Z",
+  "generatedAt": "2026-10-23T20:20:36.141Z",
   "results": [
     {
       "id": "nasa-firms",
@@ -9,12 +9,12 @@
       "statusText": "OK",
       "finalUrl": "https://firms.modaps.eosdis.nasa.gov/map/",
       "method": "HEAD",
-      "lastModified": "Tue, 20 Oct 2026 17:25:13 GMT",
-      "etag": "\"6ad7a3f9-1851\"",
+      "lastModified": "Tue, 20 Oct 2026 17:25:24 GMT",
+      "etag": "\"6ad7a404-1851\"",
       "cacheControl": "no-cache",
       "contentType": "text/html",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 499
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 85
     },
     {
       "id": "ceobs-iran-update",
@@ -28,8 +28,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 1836
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 1159
     },
     {
       "id": "acled-hormuz-oil",
@@ -43,8 +43,8 @@
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=utf-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 312
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 219
     },
     {
       "id": "acled-me-daily-strikes",
@@ -58,8 +58,8 @@
       "etag": null,
       "cacheControl": "max-age=1800, public",
       "contentType": "text/html; charset=utf-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 239
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 190
     },
     {
       "id": "world-bank-flaring",
@@ -69,29 +69,27 @@
       "statusText": "OK",
       "finalUrl": "https://www.worldbank.org/en/programs/gasflaringreduction/global-flaring-data",
       "method": "HEAD",
-      "lastModified": "Fri, 16 Oct 2026 23:05:40 GMT",
+      "lastModified": "Fri, 16 Oct 2026 22:50:41 GMT",
       "etag": null,
       "cacheControl": "public, max-age=1",
       "contentType": "text/html;charset=utf-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 70
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 54
     },
     {
       "id": "emit-catalog",
       "url": "https://www.earthdata.nasa.gov/data/catalog/lpcloud-emitl2bch4plm-001",
-      "ok": false,
-      "status": 403,
-      "statusText": "Forbidden",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
       "finalUrl": "https://www.earthdata.nasa.gov/data/catalog/lpcloud-emitl2bch4plm-001",
-      "method": "GET",
-      "lastModified": null,
-      "etag": null,
-      "cacheControl": null,
-      "contentType": "text/html",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 110,
-      "inconclusive": true,
-      "note": "The server forbids both HEAD and GET from this checker."
+      "method": "HEAD",
+      "lastModified": "Fri, 23 Oct 2026 20:20:37 GMT",
+      "etag": "\"1792786837-gzip\"",
+      "cacheControl": "max-age=21600, public",
+      "contentType": "text/html; charset=UTF-8",
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 373
     },
     {
       "id": "epa-methane",
@@ -105,8 +103,8 @@
       "etag": null,
       "cacheControl": "private, max-age=0, must-revalidate, must-revalidate, no-cache, private",
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 393
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 66
     },
     {
       "id": "ceobs-ukraine",
@@ -120,8 +118,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 1439
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 1301
     },
     {
       "id": "airwars-gaza",
@@ -131,12 +129,12 @@
       "statusText": "OK",
       "finalUrl": "https://airwars.org/israel-and-gaza-2023-25-casualty-map/",
       "method": "GET",
-      "lastModified": null,
+      "lastModified": "Fri, 23 Oct 2026 20:19:13 GMT",
       "etag": null,
       "cacheControl": "public, max-age=0, must-revalidate, s-maxage=600, stale-while-revalidate=604800",
       "contentType": "text/html",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 1357
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 317
     },
     {
       "id": "unosat-gaza-city",
@@ -150,8 +148,8 @@
       "etag": "\"68e63af9-2b566a\"",
       "cacheControl": "max-age=2592000, public, private",
       "contentType": "application/pdf",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 1006
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 387
     },
     {
       "id": "ceobs-sudan",
@@ -165,8 +163,8 @@
       "etag": null,
       "cacheControl": null,
       "contentType": "text/html; charset=UTF-8",
-      "checkedAt": "2026-10-23T20:50:03.739Z",
-      "responseTimeMs": 1420
+      "checkedAt": "2026-10-23T20:20:36.141Z",
+      "responseTimeMs": 1603
     }
   ]
 }
