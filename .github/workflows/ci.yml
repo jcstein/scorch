@@ -1,0 +1,36 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Reject generated data edits
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "${{ github.base_ref }}"
+          changes="$(git diff --name-status "origin/${{ github.base_ref }}" -- public/data || true)"
+          printf '%s\n' "$changes"
+          if printf '%s\n' "$changes" | grep -E '^[AM]'; then
+            echo "Do not add or modify public/data. The refresh workflow publishes those files on cursor/jcs/source-data-595d."
+            exit 1
+          fi
