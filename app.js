@@ -1581,7 +1581,7 @@ async function loadRefreshTimestamp() {
   const fallbackText = "Unknown";
 
   try {
-    const response = await fetch("./data/refresh.json", { cache: "no-store" });
+    const response = await fetch(`${import.meta.env.BASE_URL}data/refresh.json`, { cache: "no-store" });
     if (!response.ok) {
       els.lastRefreshValue.textContent = fallbackText;
       return;
@@ -1611,7 +1611,7 @@ async function loadRefreshTimestamp() {
 
 async function loadLinkHealth() {
   try {
-    const response = await fetch("./data/link-health.json", { cache: "no-store" });
+    const response = await fetch(`${import.meta.env.BASE_URL}data/link-health.json`, { cache: "no-store" });
     if (!response.ok) return;
     const payload = await response.json();
     const results = Array.isArray(payload.results) ? payload.results : [];
@@ -1641,7 +1641,7 @@ function normalizeLiveEvent(event) {
 
 async function loadLiveEvents() {
   try {
-    const response = await fetch("./data/live-events.json", { cache: "no-store" });
+    const response = await fetch(`${import.meta.env.BASE_URL}data/live-events.json`, { cache: "no-store" });
     if (!response.ok) {
       runtime.liveStatus = "error";
       return;
