@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-10-30T03:46:14.665Z",
+  "generatedAt": "2026-10-30T11:55:11.277Z",
   "totalSources": 11,
   "healthySources": 10,
   "failingSources": 0,
   "inconclusiveSources": 1,
-  "liveEventsTotal": 8530,
+  "liveEventsTotal": 6312,
   "liveEventsByType": {
-    "thermal": 8494,
+    "thermal": 6276,
     "conflict": 30,
     "analysis": 6
   },
   "liveSourcesHealthy": 3,
   "liveSourcesTotal": 3,
   "scriptVersion": 4,
-  "zonesActive": 142,
-  "zonesTotal": 284
+  "zonesActive": 162,
+  "zonesTotal": 299
 }
